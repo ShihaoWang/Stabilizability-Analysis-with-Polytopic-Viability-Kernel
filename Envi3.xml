@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<world>
+  <robot name="HRP2" file="../../Klampt-examples/data/robots/hrp2.rob" config="36	1.17587 2.23483 -0.140383 3.24532 0.0901966 6.1872 -0.109345 -0.141802 -0.840782 1.19865 -0.439777 0.242701 0.358074 0.237062 0.0523933 0.784092 -0.95022 -0.178042 -0.134241 0.530698 -9.99904e-05 -0.00179566 -1.32824 -0.229654 0.0526649 -0.821267 1.52891 -0.133897 0.000550383 -2.60184 0.617182 -1.52866 -0.844035 -0.0924626 0.195928 0.00211863"/>
+  <terrain file="../../Klampt-examples/data/terrains/block.off" scale="5 2.5 10" translation= "0.0 0.0 0.0"/>
+
+  <!-- <terrain name="pole1" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="-0.5 -0.5 0">
+     <display color="0.2 0.2 0.2"/>
+  </terrain>
+  <terrain name="pole2" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="-0.5 0.5 0">
+     <display color="0.2 0.2 0.2"/>
+  </terrain>
+  <terrain name="pole3" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="0.5 0.5 0">
+     <display color="0.2 0.2 0.2"/>
+  </terrain>
+  <terrain name="pole4" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="0.5 -0.5 0">
+     <display color="0.2 0.2 0.2"/>
+  </terrain> -->
+
+  <terrain name="back_pillar1" file="../../Klampt-examples/data/terrains/cube.off" scale="0.3 2.3 2.0" translation="0.1 0.8 0">
+     <display color="0.2 0.2 0.6"/>
+  </terrain>
+
+  <terrain name="back_pillar2" file="../../Klampt-examples/data/terrains/cube.off" scale="0.3 2.3 2.0" translation="-0.4 0.8 0">
+     <display color="0.2 0.2 0.6"/>
+  </terrain>
+
+  <!-- <terrain name="back_wall" file="../../Klampt-examples/data/terrains/cube.off" scale="3.0 0.2 2.0" translation="-1.5 1.1 0">
+     <display color="0.4 0.2 0.1"/>
+  </terrain> -->
+
+  <!-- <terrain name="front_wall" file="../../Klampt-examples/data/terrains/cube.off" scale="3.0 0.2 2.0" translation="-1.5 -1.1 0">
+     <display color="0.4 0.2 0.1"/>
+  </terrain> -->
+
+  <!-- <terrain name="tabletop" file="../../Klampt-examples/data/terrains/cube.off" scale="1.1 1.1 0.05" translation="-0.55 -0.55 0.7">
+     <display color="0.2 0.2 0.2"/>
+  </terrain> -->
+</world>
