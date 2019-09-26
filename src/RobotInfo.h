@@ -8,7 +8,6 @@
 #include <KrisLibrary/math3d/geometry3d.h>
 #include <KrisLibrary/geometry/CollisionMesh.h>
 #include <KrisLibrary/geometry/PQP/src/PQP.h>
-#include "HJB_Stability.h"
 
 struct LinkInfo
 {

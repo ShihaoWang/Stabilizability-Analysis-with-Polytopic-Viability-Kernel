@@ -27,45 +27,40 @@ else()
 endif()
 
 # Klampt CMake Properties
-set(KLAMPT_ROOT "/home/shihao/Klampt")
+set(KLAMPT_ROOT "/home/motion/Klampt")
 set(CMAKE_MODULE_PATH "${KLAMPT_ROOT}/CMakeModules")
 find_package(Klampt REQUIRED)
 add_definitions(${KLAMPT_DEFINITIONS})
-include_directories(${KLAMPT_INCLUDE_DIRS} "/home/shihao/Klampt/Cpp" "/home/shihao/Klampt/Cpp/Dependencies" "/home/shihao/Klampt/Cpp/Dependencies/KrisLibrary")
+include_directories(${KLAMPT_INCLUDE_DIRS} "/home/motion/Klampt/Cpp" "/home/motion/Klampt/Cpp/Dependencies" "/home/motion/Klampt/Cpp/Dependencies/KrisLibrary")
 
 # SNOPT CMake Properties
-set(SNOPT_PATH "/home/shihao/snopt7")         # cppsrc to be -I: (-I/home/shihao/snopt7/cppsrc/)
+set(SNOPT_PATH "/home/motion/snopt7")         # cppsrc to be -I: (-I/home/motion/snopt7/cppsrc/)
 include_directories(${SNOPT_PATH}/include)
 link_directories(${SNOPT_PATH}/lib)
 set(SNOPT_LIBRARIES snopt7_cpp snopt7)
 
 # EIGEN CMake Properties
-set(EIGEN3_INCLUDE_DIR "/home/shihao/eigen-3.3.5")
+set(EIGEN3_INCLUDE_DIR "/home/motion/eigen-3.3.5")
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 # CILANTRO CMake Properties
-set(CILANTRO_PATH "/home/shihao/cilantro")
+set(CILANTRO_PATH "/home/motion/cilantro")
 include_directories(${CILANTRO_PATH}/include)
-include_directories(/usr/local/lib/cmake/Pangolin/../../../include)
+include_directories(/home/motion/Pangolin/include)
+include_directories(/home/motion/Pangolin/build/src/include/)
 link_directories(${CILANTRO_PATH}/build/)
 add_definitions(-DENABLE_NON_DETERMINISTIC_PARALLELISM -DHAVE_PANGOLIN)
 set(CILANTRO_LIBRARIES cilantro.so pangolin.so)
 
 # HJB CMake Properties
-set(PVK_PATH "/home/shihao/Desktop/Polytopic-Viability-Kernel-Plus")
+set(PVK_PATH "/home/motion/Desktop/Polytopic-Viability-Kernel-Plus")
 include_directories(${PVK_PATH}/src)
 
 # Gurobi CMake Properties
-set(GUROBI_PATH "/opt/gurobi811/linux64")
+set(GUROBI_PATH "/home/motion/gurobi811/linux64")
 include_directories(${GUROBI_PATH}/include)
 link_directories(${GUROBI_PATH}/lib)
 set(GUROBI_LIBRARIES gurobi_c++ gurobi81)
-
-# CGAL CMake Properties
-set(CGAL_PATH "/home/shihao/CGAL-4.13")
-include_directories(${CGAL_PATH}/include)
-link_directories(${CGAL_PATH}/lib)
-set(CGAL_LIBRARIES mpfr gmp CGAL)
 
 # Cddlib CMake Properties
 set(Cddlib_LIBRARY cdd)
@@ -91,7 +86,7 @@ add_executable(MyApp
 	       src/StabilizingControllerGRB.cpp
 	       src/StabilizingControllerContact.cpp)
 
-target_link_libraries(MyApp  ${KLAMPT_LIBRARIES} ${SNOPT_LIBRARIES} ${CILANTRO_LIBRARIES} ${GUROBI_LIBRARIES} ${Cddlib_LIBRARY} ${CGAL_LIBRARIES})
+target_link_libraries(MyApp  ${KLAMPT_LIBRARIES} ${SNOPT_LIBRARIES} ${CILANTRO_LIBRARIES} ${GUROBI_LIBRARIES} ${Cddlib_LIBRARY})
 #set_property(TARGET MyApp PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
