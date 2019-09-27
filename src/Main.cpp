@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi3.xml";
+  string XMLFileStr = FolderPath + "/Envi2.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -32,7 +32,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   std::vector<ContactStatusInfo> RobotContactInfo = ContactStatusInfoLoader(ContactStatusPath);
 
   /* 3. Signed Distance Field Computation */
-  const int GridsNo = 201;
+  const int GridsNo = 251;
   // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
   SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
 
@@ -49,9 +49,9 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
+  RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
   std::vector<double> InitRobotConfig(SimRobot.q.size()), InitRobotVelocity(SimRobot.q.size()), ZeroRobotVelocity(SimRobot.q.size());
   std::vector<double> RobotConfigRef(SimRobot.q.size());
   for (int i = 0; i < SimRobot.q.size(); i++)
@@ -126,9 +126,9 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
     Backend.DoStateLogging_LinearPath(0, stateTrajFile_Name);
   }
 
-  // Sim.world->robots[0]->dq = InitRobotVelocity;
-  // Config InitRobotVelocityImpl(InitRobotVelocity);
-  // Sim.controlSimulators[0].oderobot->SetVelocities(InitRobotVelocityImpl);
+  Sim.world->robots[0]->dq = InitRobotVelocity;
+  Config InitRobotVelocityImpl(InitRobotVelocity);
+  Sim.controlSimulators[0].oderobot->SetVelocities(InitRobotVelocityImpl);
 
   std::vector<Vector3> ActContactPositionsRef, ActVelocitiesRef;
   std::vector<Matrix> ActJacobiansRef;
@@ -175,7 +175,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
 int main()
 {
-  string ViabilityKernelPath = "/home/shihao/Desktop/Viability-Kernel-for-Planar-Inverted-Pendulum/build/";
+  string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/";
   bool VKFastFlag = false;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
   for (int i = 0; i < 101; i++)
@@ -191,7 +191,7 @@ int main()
       std::system(mv_command_str);
     }
     // Simulation loop at each time
-    std::string FolderPath = "/home/shihao/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel";
+    std::string FolderPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel";
     bool InitializationFlag = false;
     while (InitializationFlag == false)
     {
