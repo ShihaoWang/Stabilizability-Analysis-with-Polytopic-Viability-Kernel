@@ -1,38 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <world>
-  <robot name="HRP2" file="../../Klampt-examples/data/robots/hrp2.rob" config="36	1.17587 2.23483 -0.140383 3.24532 0.0901966 6.1872 -0.109345 -0.141802 -0.840782 1.19865 -0.439777 0.242701 0.358074 0.237062 0.0523933 0.784092 -0.95022 -0.178042 -0.134241 0.530698 -9.99904e-05 -0.00179566 -1.32824 -0.229654 0.0526649 -0.821267 1.52891 -0.133897 0.000550383 -2.60184 0.617182 -1.52866 -0.844035 -0.0924626 0.195928 0.00211863"/>
-  <terrain file="../../Klampt-examples/data/terrains/block.off" scale="5 2.5 10" translation= "0.0 0.0 0.0"/>
+  <robot name="HRP2" file="../../Klampt-examples/data/robots/hrp2.rob" config="36	0.423919 -0.886968 -0.068951 1.52244 0.362972 6.19836 -0.457653 0.046 -0.822926 0.69309 -0.162816 0.185925 -0.07312 0.14506 -0.188014 0.50366 -0.671601 -0.030825 -0.072105 0.341951 -0.000108 -0.001805 -2.48313 -0.692294 1.55422 -0.799628 1.45271 -0.210386 0.002967 0.688229 0.79181 -0.73249 -0.678104 -1.2028 -0.233914 0.002119"/>
+  <terrain file="../../Klampt-examples/data/terrains/block.off" scale="2.0 2.0 2.0" translation="0.0 0.0 0.0"/>
 
-  <!-- <terrain name="pole1" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="-0.5 -0.5 0">
-     <display color="0.2 0.2 0.2"/>
+  <!-- the door frame -->
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.05 2.15" translation="-0.022 -0.02 0.0">
+     <display color="0.4 0.3 0.2"/>
   </terrain>
-  <terrain name="pole2" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="-0.5 0.5 0">
-     <display color="0.2 0.2 0.2"/>
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.05 0.88" translation="0.903 -0.01 0.0">
+     <display color="0.4 0.3 0.2"/>
   </terrain>
-  <terrain name="pole3" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="0.5 0.5 0">
-     <display color="0.2 0.2 0.2"/>
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.05 1.2" translation="0.903 -0.01 0.92">
+     <display color="0.4 0.3 0.2"/>
   </terrain>
-  <terrain name="pole4" file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.7" translation="0.5 -0.5 0">
-     <display color="0.2 0.2 0.2"/>
-  </terrain> -->
-
-  <terrain name="back_pillar1" file="../../Klampt-examples/data/terrains/cube.off" scale="0.3 2.3 2.0" translation="0.1 0.8 0">
-     <display color="0.2 0.2 0.6"/>
+  <!-- stop -->
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.01 2.15" translation="0.895 -0.01 0.0">
+     <display color="0.4 0.3 0.2"/>
   </terrain>
-
-  <terrain name="back_pillar2" file="../../Klampt-examples/data/terrains/cube.off" scale="0.3 2.3 2.0" translation="-0.4 0.8 0">
-     <display color="0.2 0.2 0.6"/>
+  <!-- catch -->
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.018 0.015 0.04" translation="0.905 0.025 0.88">
+     <display color="0.4 0.3 0.2"/>
   </terrain>
 
-  <!-- <terrain name="back_wall" file="../../Klampt-examples/data/terrains/cube.off" scale="3.0 0.2 2.0" translation="-1.5 1.1 0">
-     <display color="0.4 0.2 0.1"/>
-  </terrain> -->
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.9 0.05 2.15" translation="0.0 -0.0125 0.0">
+     <display color="0.898 0.8 1.0"/>
+  </terrain>
 
-  <!-- <terrain name="front_wall" file="../../Klampt-examples/data/terrains/cube.off" scale="3.0 0.2 2.0" translation="-1.5 -1.1 0">
-     <display color="0.4 0.2 0.1"/>
-  </terrain> -->
+  <terrain file="../../Klampt-examples/data/objects/thincube.off" scale="0.05 2.25 0.5" translation="0.75 0.0 1.0">
+     <display color="0.3 0.1 0.05 0.75"/>
+  </terrain>
+  <terrain file="../../Klampt-examples/data/objects/thincube.off" scale="0.175 0.25 0.5" translation="0.75 -0.1 1.0">
+     <display color="0.3 0.1 0.05 0.75"/>
+  </terrain>
 
-  <!-- <terrain name="tabletop" file="../../Klampt-examples/data/terrains/cube.off" scale="1.1 1.1 0.05" translation="-0.55 -0.55 0.7">
-     <display color="0.2 0.2 0.2"/>
-  </terrain> -->
+  <simulation>
+    <globals adaptiveTimeStepping="1" />
+    <robot index="0" body="11">  <!-- right foot -->
+       <geometry kFriction="1.0" kRestitution="0.0" padding="0.005" stiffness="80000" damping="20000" />
+    </robot>
+    <robot index="0" body="17">  <!-- left foot -->
+       <geometry kFriction="1.0" kRestitution="0.0" padding="0.005" stiffness="80000" damping="20000" />
+    </robot>
+    <robot index="0" body="27">  <!-- left foot -->
+       <geometry kFriction="10.0" kRestitution="0.0" padding="0.005" stiffness="80000" damping="20000" />
+    </robot>
+    <robot index="0" body="34">  <!-- left foot -->
+       <geometry kFriction="10.0" kRestitution="0.0" padding="0.005" stiffness="80000" damping="20000" />
+    </robot>
+  </simulation>
+
 </world>

@@ -276,7 +276,7 @@ void COMDesWriter(const int & FileIndex, const Vector3 & COMPosdes)
   return;
 }
 
-void CentroidalFailureMetricWriter(const Vector3 & COM, const Vector3 & COMVel, const std::vector<double> FailureMetricVec, const std::vector<const char*> & CentroidalFileNames, const std::vector<const char*> & FailureMetricNames)
+void CentroidalFailureMetricWriter(const Vector3 & COM, const Vector3 & COMVel, const double & KE, const std::vector<double> FailureMetricVec, const std::vector<const char*> & CentroidalFileNames, const std::vector<const char*> & FailureMetricNames)
 {
   // This function is used to write centroidal trajectories and faliure metric into files.
    double PVKRBTraj_i =   FailureMetricVec[0];
@@ -317,6 +317,11 @@ void CentroidalFailureMetricWriter(const Vector3 & COM, const Vector3 & COMVel, 
   COMVelzFileWriter.open(CentroidalFileNames[5], std::ios_base::app);
   COMVelzFileWriter<<std::to_string(COMVel.z)<<"\n";
   COMVelzFileWriter.close();
+
+  std::ofstream KEFileWriter;
+  KEFileWriter.open(CentroidalFileNames[6], std::ios_base::app);
+  KEFileWriter<<std::to_string(KE)<<"\n";
+  KEFileWriter.close();
 
   std::ofstream PVKRBFileWriter;
   PVKRBFileWriter.open(FailureMetricNames[0], std::ios_base::app);

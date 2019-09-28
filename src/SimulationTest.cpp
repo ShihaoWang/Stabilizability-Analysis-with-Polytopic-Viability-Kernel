@@ -23,7 +23,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   // Case 0
   Vector3 CentDir = CentDirection;
   double CentDirNorm = sqrt(CentDir.x * CentDir.x + CentDir.y * CentDir.y + CentDir.z * CentDir.z);
-  std::uniform_real_distribution<> dis(0.0, 1500.0);
+  std::uniform_real_distribution<> dis(0.0, 500.0);
   double ForceMag = dis(gen);
   double Fx_t = ForceMag * CentDir.x/CentDirNorm;
   double Fy_t = ForceMag * CentDir.y/CentDirNorm;
@@ -50,6 +50,8 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   // Centroidal Informatioin only contains robot's centroidal position and velocity.
   std::vector<double> COMx(StepNo),             COMy(StepNo),             COMz(StepNo);
   std::vector<double> COMVelx(StepNo),          COMVely(StepNo),          COMVelz(StepNo);
+
+  std::vector<double> KETraj(StepNo);
 
   // Seven objective trajectories
   std::vector<double> PVKRBTraj(StepNo),        PVKCPTraj(StepNo),        PVKHJBTraj(StepNo);
@@ -79,9 +81,11 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   const string COMVelxFile = "COMVelxTraj" + std::to_string(FileIndex) + ".txt";        const char *COMVelxFile_Name = COMVelxFile.c_str();
   const string COMVelyFile = "COMVelyTraj" + std::to_string(FileIndex) + ".txt";        const char *COMVelyFile_Name = COMVelyFile.c_str();
   const string COMVelzFile = "COMVelzTraj" + std::to_string(FileIndex) + ".txt";        const char *COMVelzFile_Name = COMVelzFile.c_str();
+  const string KEFile = "KETraj" + std::to_string(FileIndex) + ".txt";                  const char *KEFile_Name = KEFile.c_str();
 
   CentroidalFileNames.push_back(COMxFile_Name);     CentroidalFileNames.push_back(COMyFile_Name);     CentroidalFileNames.push_back(COMzFile_Name);
   CentroidalFileNames.push_back(COMVelxFile_Name);  CentroidalFileNames.push_back(COMVelyFile_Name);  CentroidalFileNames.push_back(COMVelzFile_Name);
+  CentroidalFileNames.push_back(KEFile_Name);
 
   const string PVKRBTrajFile = "PVKRBTraj" + std::to_string(FileIndex) + ".txt";        const char *PVKRBTrajFile_Name = PVKRBTrajFile.c_str();
   const string PVKHJBTrajFile = "PVKHJBTraj" + std::to_string(FileIndex) + ".txt";      const char *PVKHJBTrajFile_Name = PVKHJBTrajFile.c_str();
@@ -160,6 +164,9 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     CentroidalState(SimRobot, COMPos, COMVel);
     COMx[StepIndex] = COMPos.x;             COMy[StepIndex] = COMPos.y;               COMz[StepIndex] = COMPos.z;
     COMVelx[StepIndex] = COMVel.x;          COMVely[StepIndex] = COMVel.y;            COMVelz[StepIndex] = COMVel.z;
+
+    // Get robot's current kinetic energy
+    KETraj[StepIndex] = SimRobot.GetKineticEnergy();
 
     std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
     std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
@@ -240,11 +247,9 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     ZMPTraj[StepIndex] = ZMPObjective;
 
     std::vector<double> FailureMetricVec = { RBObjective, CPCEObjective, HJBObjective, ZSCObjective, OEObjective, CPObjective, ZMPObjective};
-    CentroidalFailureMetricWriter(COMPos, COMVel, FailureMetricVec, CentroidalFileNames, ObjectiveNames);
+    CentroidalFailureMetricWriter(COMPos, COMVel, KETraj[StepIndex], FailureMetricVec, CentroidalFileNames, ObjectiveNames);
 
     /*  Controller Input  */
-
-
     switch (ControllerType)
     {
       case 1:

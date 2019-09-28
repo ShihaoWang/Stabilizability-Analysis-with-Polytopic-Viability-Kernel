@@ -62,8 +62,9 @@ struct InitialConfigOpt: public NonlinearOptimizerInfo
     SimRobotObj.UpdateConfig(ConfigOptNew);     // Here both the SimRobot.q and robot frames have already been updated.
     double ConfigVia = 0.0;
     for (int i = 0; i <nVar; i++)
+    // for (int i = 0; i <6; i++)
     {
-      ConfigVia += (ConfigOpt[i] - RobotConfigRef[i]) * (ConfigOpt[i] - RobotConfigRef[i]);
+      ConfigVia +=(ConfigOpt[i] - RobotConfigRef[i]) * (ConfigOpt[i] - RobotConfigRef[i]);
     }
     F[0] =  ConfigVia;
     // Make sure that active end effectors have zero relative signed distance.

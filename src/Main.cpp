@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi2.xml";
+  string XMLFileStr = FolderPath + "/Envi3.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -49,9 +49,9 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
+  RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
   std::vector<double> InitRobotConfig(SimRobot.q.size()), InitRobotVelocity(SimRobot.q.size()), ZeroRobotVelocity(SimRobot.q.size());
   std::vector<double> RobotConfigRef(SimRobot.q.size());
   for (int i = 0; i < SimRobot.q.size(); i++)
@@ -198,7 +198,7 @@ int main()
       double KEInit;
       Vector3 CentDirection;
       InitParaGenerator(KEInit, CentDirection);   // Here Cent Direction stands for the initial centroidal velocity direction!
-      KEInit = 10.0;
+      KEInit = 5.0;
       InitializationFlag = InnerSimulation(FolderPath, VKObj, KEInit, CentDirection);
     }
   }

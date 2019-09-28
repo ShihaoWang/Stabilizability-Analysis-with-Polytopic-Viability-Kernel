@@ -17,15 +17,18 @@ static std::vector<Vector3> ContactVelocities;      // This vector saves robot's
 
 // QP Gains
 static double Kpos = 0.0;
+
+// Case 1/3
 // static double Kvel = 20.0;         // This gain should not be so big for stabilization.  1 works! 2 works! 5 kinda
 // static double Kqddot = 5.0;
 
+// Case 5
 static double Kvel = 20.0;
 static double Kqddot = 5.0;
 
 static double Ku = 0.0;
 static double Kf = 0.0;
-static double Keta = 100.0;
+static double Keta = 0.1;
 
 static double Kp = 0.0;
 static double Kd = 2.5;
@@ -729,13 +732,21 @@ std::vector<double> StabilizingControllerContact(const Robot& SimRobot, const st
   Config RobotVelocityCurrent(RobotVelocityCur);
   qdotTrajAct.push_back(RobotVelocityCurrent);
 
-  std::vector<double> Tau(DOF), qddot(DOF);
-  int QPStatus = QPSolver(_SimRobot, RobotVelocityCur, Tau, qddot);
-  std:printf("QPStatus: %d \n", QPStatus);
-
   std::vector<double> qDes(DOF), qdotDes(DOF);
   std::vector<double> qRef = qTrajDes[qTrajDes.size()-1];
   std::vector<double> qdotRef = qdotTrajDes[qdotTrajDes.size()-1];
+
+  // If robot's current kinetic energy is too small, there is no need to conduct QP.
+  double KEtol = 0.001;
+  double KE_i = SimRobot.GetKineticEnergy();
+  if(KE_i<=KEtol)
+  {
+    return qRef;
+  }
+
+  std::vector<double> Tau(DOF), qddot(DOF);
+  int QPStatus = QPSolver(_SimRobot, RobotVelocityCur, Tau, qddot);
+  std:printf("QPStatus: %d \n", QPStatus);
 
   std::vector<double> qddotDes(DOF);
 

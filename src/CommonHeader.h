@@ -23,7 +23,7 @@ void PIPsWriter(const std::vector<PIPInfo>& PIPInfoTotal, const string &user_pat
 void VectorWriter(const std::vector<double> & Cost_Vec, const string &user_path, const string &config_file_name);
 void TrajAppender(const char * qTrajFile_Name, const Config & Traj_i, const int & DOF);
 void SpecsWriter(const Robot & SimRobot, const double & t_final, const double & dt, const int & InitContactNo, const int & FileIndex);
-void CentroidalFailureMetricWriter(const Vector3 & COM, const Vector3 & COMVel, const std::vector<double> FailureMetricVec, const std::vector<const char*> & CentroidalFileNames, const std::vector<const char*> & FailureMetricNames);
+void CentroidalFailureMetricWriter(const Vector3 & COM, const Vector3 & COMVel, const double & KE, const std::vector<double> FailureMetricVec, const std::vector<const char*> & CentroidalFileNames, const std::vector<const char*> & FailureMetricNames);
 void COMDesWriter(const int & FileIndex, const Vector3 & COMPosdes);
 void IntersectionsWriter(const std::vector<Vector3> & Intersections, const string &user_path, const string &inters_file_name);
 
