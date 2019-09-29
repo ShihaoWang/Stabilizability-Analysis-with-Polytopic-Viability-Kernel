@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi3.xml";
+  string XMLFileStr = FolderPath + "/Envi4.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -45,13 +45,16 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTest.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTester.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp0.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
+  RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp4.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp4_Load.config");
+
   std::vector<double> InitRobotConfig(SimRobot.q.size()), InitRobotVelocity(SimRobot.q.size()), ZeroRobotVelocity(SimRobot.q.size());
   std::vector<double> RobotConfigRef(SimRobot.q.size());
   for (int i = 0; i < SimRobot.q.size(); i++)
@@ -75,7 +78,9 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
     }
     break;
     default:
-    { printf("Initial Optimization Finished! \n");}
+    {
+      printf("Initial Optimization Finished! \n");
+    }
     break;
   }
   RobotConfigWriter(InitRobotConfig, UserFilePath, "InitConfig.config");
@@ -198,7 +203,7 @@ int main()
       double KEInit;
       Vector3 CentDirection;
       InitParaGenerator(KEInit, CentDirection);   // Here Cent Direction stands for the initial centroidal velocity direction!
-      KEInit = 5.0;
+      KEInit = 15.0;
       InitializationFlag = InnerSimulation(FolderPath, VKObj, KEInit, CentDirection);
     }
   }
