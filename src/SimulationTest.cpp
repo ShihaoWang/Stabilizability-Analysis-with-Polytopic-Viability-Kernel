@@ -9,7 +9,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
 {
   /* Simulation parameters */
   int     EdgeNumber      = 4;
-  double  mu              = 0.5;
+  double  mu              = 1.0;
   double  t_impul         = Sim.time + 0.25;                      // The impulse lasts for 0.5s.
   double  t_final         = 3.5;                                  // The simulation lasts for 3.5s.
   int     StepNo          = round(t_final/dt);

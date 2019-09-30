@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi4.xml";
+  string XMLFileStr = FolderPath + "/Envi0.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -151,7 +151,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   std::random_device rd;
   std::mt19937 gen(rd());
   double KELow = 0.0;
-  double KEUpp = 30.0;
+  double KEUpp = 50.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
@@ -183,15 +183,15 @@ int main()
   string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/";
   bool VKFastFlag = false;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
-  for (int i = 0; i < 101; i++)
+  for (int i = 0; i < 251; i++)
   {
     if(i%5==0)
     {
-      string mv_command = "mv -f *Traj*.* ./ExpData";
+      string mv_command = "mv -f *Traj*.* ./Data";
       const char *mv_command_str = mv_command.c_str();
       std::system(mv_command_str);
 
-      mv_command = "mv -f Specs*.* ./ExpData";
+      mv_command = "mv -f Specs*.* ./Data";
       mv_command_str = mv_command.c_str();
       std::system(mv_command_str);
     }
@@ -203,7 +203,6 @@ int main()
       double KEInit;
       Vector3 CentDirection;
       InitParaGenerator(KEInit, CentDirection);   // Here Cent Direction stands for the initial centroidal velocity direction!
-      KEInit = 15.0;
       InitializationFlag = InnerSimulation(FolderPath, VKObj, KEInit, CentDirection);
     }
   }
