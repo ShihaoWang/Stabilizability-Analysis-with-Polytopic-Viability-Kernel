@@ -10,7 +10,9 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   /* Simulation parameters */
   int     EdgeNumber      = 4;
   double  mu              = 1.0;
-  double  t_impul         = Sim.time + 0.25;                      // The impulse lasts for 0.5s.
+  double  t_last          = 0.5;
+  double  t_cur           = Sim.time;
+  double  t_impul         = t_cur + t_last;                      // The impulse lasts for 0.5s.
   double  t_final         = 3.5;                                  // The simulation lasts for 3.5s.
   int     StepNo          = round(t_final/dt);
   t_final+=Sim.time;
@@ -23,11 +25,18 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   // Case 0
   Vector3 CentDir = CentDirection;
   double CentDirNorm = sqrt(CentDir.x * CentDir.x + CentDir.y * CentDir.y + CentDir.z * CentDir.z);
-  std::uniform_real_distribution<> dis(0.0, 500.0);
+  CentDir.x = CentDir.x/CentDirNorm;
+  CentDir.y = CentDir.y/CentDirNorm;
+  CentDir.z = CentDir.z/CentDirNorm;
+  std::uniform_real_distribution<> dis(6000.0, 7500.0);
   double ForceMag = dis(gen);
-  double Fx_t = ForceMag * CentDir.x/CentDirNorm;
-  double Fy_t = ForceMag * CentDir.y/CentDirNorm;
-  double Fz_t = ForceMag * CentDir.z/CentDirNorm;
+  double Fx_t = ForceMag * CentDir.x;
+  double Fy_t = ForceMag * CentDir.y;
+  double Fz_t = ForceMag * CentDir.z;
+
+  double Fx_t_k = Fx_t/t_last;
+  double Fy_t_k = Fy_t/t_last;
+  double Fz_t_k = Fz_t/t_last;
 
   /* Override the default controller with a PolynomialPathController */
   auto NewControllerPtr = std::make_shared<PolynomialPathController>(*Sim.world->robots[0]);
@@ -155,8 +164,10 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
 
    //  if(Sim.time<=t_impul)
    // {
-   //   // The impulse is given to the robot's torso
-   //   dBodyAddForceAtPos(Sim.odesim.robot(0)->body(19), Fx_t, Fy_t, Fz_t, 0.0, 0.0, 0.0);
+   //   Fx_t = Fx_t_k * (Sim.time - t_cur);
+   //   Fy_t = Fy_t_k * (Sim.time - t_cur);
+   //   Fz_t = Fz_t_k * (Sim.time - t_cur);
+   //   dBodyAddForceAtPos(Sim.odesim.robot(0)->body(19), Fx_t, Fy_t, Fz_t, 0.0, 0.0, 0.25);
    // }
 
     /* Robot's COMPos and COMVel */

@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi0.xml";
+  string XMLFileStr = FolderPath + "/Envi1.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -45,9 +45,9 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTest.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTester.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp0.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
+  RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
@@ -157,10 +157,10 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
   double xLimit, yLimit, zLimit;
 
-  // 2 Contact:
-  // xLimit = 0.2;  yLimit = 0.35;  zLimit = 0.1;       // Case 1 to Case 4
-  xLimit = 0.1;  yLimit = 0.1;  zLimit = 0.1;
-
+  // // Case 1
+  // xLimit = 0.1;  yLimit = 0.1;  zLimit = 0.1;
+  // Case 3
+  xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
   std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
   std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
   std::uniform_real_distribution<> zDirectionDis(-zLimit, zLimit);
