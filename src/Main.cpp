@@ -33,8 +33,8 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
 
   /* 3. Signed Distance Field Computation */
   const int GridsNo = 251;
-  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
-  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
+  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
+  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
 
   std::vector<Config>  qTraj;
   std::vector<double> COMVelx, COMVely, COMVelz;
@@ -151,10 +151,10 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   std::random_device rd;
   std::mt19937 gen(rd());
   double KELow = 0.0;
-  // // Case 1/3
+  // // Case 1/3/5
   // double KEUpp = 50.0;
-  // Case 5
-  double KEUpp = 75.0;
+  // Case 7
+  double KEUpp = 50.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
@@ -162,10 +162,10 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
   // // Case 1
   // xLimit = 0.1;  yLimit = 0.1;  zLimit = 0.1;
-  // // Case 3
+  // // Case 3/5
   // xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
-  // Case 5
-  xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.15;
+  // Case 7
+  xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.15;
   std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
   std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
   std::uniform_real_distribution<> zDirectionDis(-zLimit, zLimit);
@@ -188,7 +188,7 @@ int main()
   string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/";
   bool VKFastFlag = false;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
-  for (int i = 0; i < 251; i++)
+  for (int i = 0; i < 275; i++)
   {
     if(i%5==0)
     {
@@ -208,7 +208,6 @@ int main()
       double KEInit;
       Vector3 CentDirection;
       InitParaGenerator(KEInit, CentDirection);   // Here Cent Direction stands for the initial centroidal velocity direction!
-      KEInit = 5.0;
       InitializationFlag = InnerSimulation(FolderPath, VKObj, KEInit, CentDirection);
     }
   }
