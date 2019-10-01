@@ -699,6 +699,7 @@ void ConeUnitGenerator(const std::vector<Vector3> & ActContacts, SignedDistanceF
     Vector3 ContactNormals_i = SDFInfo.SignedDistanceNormal(ActContacts[i]);
     ContactNormals_i.setNormalized(ContactNormals_i);
     Vector3 TangVector_i = cross(ContactNormals_i, RefUnit);
+    TangVector_i.setNormalized(TangVector_i);
     TangVector_i.x = mu * TangVector_i.x;
     TangVector_i.y = mu * TangVector_i.y;
     TangVector_i.z = mu * TangVector_i.z;

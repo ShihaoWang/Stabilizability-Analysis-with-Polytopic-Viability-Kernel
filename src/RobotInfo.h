@@ -856,10 +856,10 @@ struct SignedDistanceFieldInfo
     /*
       Jacobian matrix in the y-direction
     */
-    double valMABEF = (x_FloatIndex - x_leftindex*1.0) * (valMBF - valMAE) + valMAE;
+    double valMAEBF = (x_FloatIndex - x_leftindex*1.0) * (valMBF - valMAE) + valMAE;
     double valMDHCG = (x_FloatIndex - x_leftindex*1.0) * (valMCG - valMDH) + valMDH;
 
-    double JacDistTo_y = (valMBFCG - valMAEDH)/Envi_y_unit;
+    double JacDistTo_y = (valMDHCG - valMAEBF)/Envi_y_unit;
 
     /*
       Jacobian matrix in the z-direction
@@ -871,7 +871,7 @@ struct SignedDistanceFieldInfo
     double valMHG = (x_FloatIndex - x_leftindex*1.0) * (valG - valH) + valH;
     // Cut the point with a plane orthgonal to y axis
     double valMABDC = (y_FloatIndex - y_leftindex*1.0) * (valMDC - valMAB) + valMAB;
-    double valMEFHG = (y_FloatIndex - y_leftindex*1.0) * (valMHG - valMEF) + valMHG;
+    double valMEFHG = (y_FloatIndex - y_leftindex*1.0) * (valMHG - valMEF) + valMEF;
     // The values at the edge give the jacobian to z
     double JacDistTo_z = (valMEFHG - valMABDC)/Envi_z_unit;
 

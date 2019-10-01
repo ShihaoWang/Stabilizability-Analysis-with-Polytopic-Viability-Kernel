@@ -4,25 +4,25 @@
   <terrain file="../../Klampt-examples/data/terrains/block.off" scale="2.0 2.0 2.0" translation="0.0 0.0 0.0"/>
 
   <!-- the door frame -->
-  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.05 2.15" translation="-0.022 -0.02 0.0">
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.2 2.15" translation="-0.022 -0.02 0.0">
      <display color="0.4 0.3 0.2"/>
   </terrain>
-  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.05 0.88" translation="0.903 -0.01 0.0">
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.2 0.88" translation="0.903 -0.01 0.0">
      <display color="0.4 0.3 0.2"/>
   </terrain>
-  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.05 1.2" translation="0.903 -0.01 0.92">
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.2 1.2" translation="0.903 -0.01 0.92">
      <display color="0.4 0.3 0.2"/>
   </terrain>
   <!-- stop -->
-  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.01 2.15" translation="0.895 -0.01 0.0">
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.02 0.2 2.15" translation="0.895 -0.01 0.0">
      <display color="0.4 0.3 0.2"/>
   </terrain>
   <!-- catch -->
-  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.018 0.015 0.04" translation="0.905 0.025 0.88">
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.018 0.2 0.04" translation="0.905 0.025 0.88">
      <display color="0.4 0.3 0.2"/>
   </terrain>
 
-  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.9 0.05 2.15" translation="0.0 -0.0125 0.0">
+  <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.9 0.2 2.15" translation="0.0 -0.0125 0.0">
      <display color="0.898 0.8 1.0"/>
   </terrain>
 
