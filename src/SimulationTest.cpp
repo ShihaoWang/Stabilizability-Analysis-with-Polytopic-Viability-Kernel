@@ -105,8 +105,8 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   const string ZMPTrajFile = "ZMPTraj" + std::to_string(FileIndex) + ".txt";            const char *ZMPTrajFile_Name = ZMPTrajFile.c_str();
 
   ObjectiveNames.push_back(PVKRBTrajFile_Name);
-  ObjectiveNames.push_back(PVKHJBTrajFile_Name);
   ObjectiveNames.push_back(PVKCPTrajFile_Name);
+  ObjectiveNames.push_back(PVKHJBTrajFile_Name);
   ObjectiveNames.push_back(ZSCTrajFile_Name);
   ObjectiveNames.push_back(OETrajFile_Name);
   ObjectiveNames.push_back(CPTrajFile_Name);

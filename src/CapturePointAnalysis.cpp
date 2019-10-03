@@ -177,6 +177,7 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
     std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, FailureFlag);
     /* 2. Failure Metric using PVK-CP assumption*/
     double CPCEObjective = CPCEGenerator(PIPTotal);
+    std::printf("PVK-CP: %f\n", CPCEObjective);
     PVKCPTraj[StepIndex] = CPCEObjective;
 
     // Projection to ground
@@ -206,6 +207,7 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
     double CPMargin = 0.0;
     double CPObjective = CPCEGeneratorAnalysis(PIPSPTotal, CPMargin);
     CPTraj[StepIndex] = CPObjective;
+    std::printf("CP: %f\n", CPObjective);
 
     StepIndex = StepIndex + 1;
   }
@@ -219,7 +221,7 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
 void CapturePointAnalysis(Robot & SimRobot, ViabilityKernelInfo & VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo)
 {
   // This function is use to generate data analysis for experimentation trajectories.
-  string UserPath = "/home/motion/Desktop/Data/Case 3/";
+  string UserPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/Data/";
   for (int i = 0; i < 250; i++)
   {
     int FileIndex = i + 1;
