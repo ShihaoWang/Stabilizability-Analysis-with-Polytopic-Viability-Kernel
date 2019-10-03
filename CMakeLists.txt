@@ -76,7 +76,6 @@ add_executable(MyApp
 	       src/InitialStateOptimization.cpp
                src/NonlinearOptimizerInfo.h
                src/SimulationTest.cpp
-               src/CapturePointSupportPolygon.cpp
                src/ZeroStepCapturability.cpp
 	       src/ViabilityKernelLoader.cpp
                src/HJBController.cpp
@@ -84,7 +83,8 @@ add_executable(MyApp
 	       src/ConvexPolyhedron.cpp
 	       src/QPStabilizer.cpp
 	       src/StabilizingControllerGRB.cpp
-	       src/StabilizingControllerContact.cpp)
+	       src/StabilizingControllerContact.cpp
+	       src/CapturePointAnalysis.cpp)
 
 target_link_libraries(MyApp  ${KLAMPT_LIBRARIES} ${SNOPT_LIBRARIES} ${CILANTRO_LIBRARIES} ${GUROBI_LIBRARIES} ${Cddlib_LIBRARY})
 #set_property(TARGET MyApp PROPERTY INTERPROCEDURAL_OPTIMIZATION True)

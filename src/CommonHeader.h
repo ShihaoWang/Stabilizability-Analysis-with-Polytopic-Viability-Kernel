@@ -96,8 +96,6 @@ std::vector<double> HJBControllerVelo(const Robot & _SimRobot, const Vector3 & _
 void RobotStateLoader(const string &user_path, const string &config_file_name, const string &velo_file_name, std::vector<double> & RobotConfig, std::vector<double> & RobotVelocity);
 
 // /*  11. DataAnalysis*/
-// void DataAnalysis(int & CaseNumber);
-// void ROCCurveGenerator(const int & ExpIndex, Robot& SimRobot, ViabilityKernelInfo& VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo);
-// int qTrajNCOMVelTrajLoader(const int & CaseNumber, const int& FileIndex, std::vector<Config> & qTraj, std::vector<double> & COMVelx, std::vector<double> & COMVely, std::vector<double> & COMVelz);
+void CapturePointAnalysis(Robot & SimRobot, ViabilityKernelInfo & VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo);
 
 #endif

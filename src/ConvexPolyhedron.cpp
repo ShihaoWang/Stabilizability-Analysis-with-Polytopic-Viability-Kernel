@@ -955,9 +955,16 @@ double CPCEGeneratorAnalysis(const std::vector<PIPInfo> & PIPTotal, const double
     double CP_x = L * sin(theta);
     double CP_xdot = L * thetadot * cos(theta);
     double CP_L = L * cos(theta);
-    double CP_g = 9.81 * cos(g_angle/180.0 * 3.1415926);
-    double CP_xbar = CP_x + CP_xdot/sqrt(CP_g/CP_L);
-    CP_Pos[i] = CP_xbar - Margin;
+    if(CP_L<=0)
+    {
+      CP_Pos[i] = 0.0;
+    }
+    else
+    {
+      double CP_g = 9.81 * cos(g_angle/180.0 * 3.1415926);
+      double CP_xbar = CP_x + CP_xdot/sqrt(CP_g/CP_L);
+      CP_Pos[i] = CP_xbar - Margin;
+    }
   }
   double CPCECost = *min_element(CP_Pos.begin(), CP_Pos.end());
   return max(0.0, -CPCECost);
@@ -985,7 +992,6 @@ double CPCEGenerator(const std::vector<PIPInfo> & PIPTotal)
       double CP_g = 9.81 * cos(g_angle/180.0 * 3.1415926);
       double CP_xbar = CP_x + CP_xdot/sqrt(CP_g/CP_L);
       CP_Pos[i] = CP_xbar;
-      // std::printf("CP_xbar: %f\n", CP_xbar);
     }
   }
   double CPCECost = *min_element(CP_Pos.begin(), CP_Pos.end());
