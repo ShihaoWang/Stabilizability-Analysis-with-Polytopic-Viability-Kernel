@@ -287,36 +287,36 @@ void CentroidalFailureMetricWriter(const Vector3 & COM, const Vector3 & COMVel, 
    double CPTraj_i =      FailureMetricVec[5];
    double ZMPTraj_i =     FailureMetricVec[6];
 
-  // // Write all the function values
-  // std::ofstream COMxFileWriter;
-  // COMxFileWriter.open(CentroidalFileNames[0], std::ios_base::app);
-  // COMxFileWriter<<std::to_string(COM.x)<<"\n";
-  // COMxFileWriter.close();
-  //
-  // std::ofstream COMyFileWriter;
-  // COMyFileWriter.open(CentroidalFileNames[1], std::ios_base::app);
-  // COMyFileWriter<<std::to_string(COM.y)<<"\n";
-  // COMyFileWriter.close();
-  //
-  // std::ofstream COMzFileWriter;
-  // COMzFileWriter.open(CentroidalFileNames[2], std::ios_base::app);
-  // COMzFileWriter<<std::to_string(COM.z)<<"\n";
-  // COMzFileWriter.close();
-  //
-  // std::ofstream COMVelxFileWriter;
-  // COMVelxFileWriter.open(CentroidalFileNames[3], std::ios_base::app);
-  // COMVelxFileWriter<<std::to_string(COMVel.x)<<"\n";
-  // COMVelxFileWriter.close();
-  //
-  // std::ofstream COMVelyFileWriter;
-  // COMVelyFileWriter.open(CentroidalFileNames[4], std::ios_base::app);
-  // COMVelyFileWriter<<std::to_string(COMVel.y)<<"\n";
-  // COMVelyFileWriter.close();
-  //
-  // std::ofstream COMVelzFileWriter;
-  // COMVelzFileWriter.open(CentroidalFileNames[5], std::ios_base::app);
-  // COMVelzFileWriter<<std::to_string(COMVel.z)<<"\n";
-  // COMVelzFileWriter.close();
+  // Write all the function values
+  std::ofstream COMxFileWriter;
+  COMxFileWriter.open(CentroidalFileNames[0], std::ios_base::app);
+  COMxFileWriter<<std::to_string(COM.x)<<"\n";
+  COMxFileWriter.close();
+
+  std::ofstream COMyFileWriter;
+  COMyFileWriter.open(CentroidalFileNames[1], std::ios_base::app);
+  COMyFileWriter<<std::to_string(COM.y)<<"\n";
+  COMyFileWriter.close();
+
+  std::ofstream COMzFileWriter;
+  COMzFileWriter.open(CentroidalFileNames[2], std::ios_base::app);
+  COMzFileWriter<<std::to_string(COM.z)<<"\n";
+  COMzFileWriter.close();
+
+  std::ofstream COMVelxFileWriter;
+  COMVelxFileWriter.open(CentroidalFileNames[3], std::ios_base::app);
+  COMVelxFileWriter<<std::to_string(COMVel.x)<<"\n";
+  COMVelxFileWriter.close();
+
+  std::ofstream COMVelyFileWriter;
+  COMVelyFileWriter.open(CentroidalFileNames[4], std::ios_base::app);
+  COMVelyFileWriter<<std::to_string(COMVel.y)<<"\n";
+  COMVelyFileWriter.close();
+
+  std::ofstream COMVelzFileWriter;
+  COMVelzFileWriter.open(CentroidalFileNames[5], std::ios_base::app);
+  COMVelzFileWriter<<std::to_string(COMVel.z)<<"\n";
+  COMVelzFileWriter.close();
 
   std::ofstream KEFileWriter;
   KEFileWriter.open(CentroidalFileNames[6], std::ios_base::app);

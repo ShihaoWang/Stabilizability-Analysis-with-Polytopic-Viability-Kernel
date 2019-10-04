@@ -164,7 +164,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   double xLimit, yLimit, zLimit;
 
   // Case 1
-  xLimit = 0.1;  yLimit = 0.1;  zLimit = 0.1;
+  xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
   // // Case 3/5
   // xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
   // Case 7

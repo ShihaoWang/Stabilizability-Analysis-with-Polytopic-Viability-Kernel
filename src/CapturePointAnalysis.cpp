@@ -157,6 +157,9 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
   std::vector<double> PVKCPTraj(qTraj.size());
   std::vector<double> CPTraj(qTraj.size());
 
+  std::vector<double> COMx(qTraj.size()),             COMy(qTraj.size()),             COMz(qTraj.size());
+  std::vector<double> COMVelx(qTraj.size()),          COMVely(qTraj.size()),          COMVelz(qTraj.size());
+
   int StepIndex = 0;
   for (int i = 0; i < qTraj.size(); i++)        // For the sake of Centroidal Acceleration for ZMP
   {
@@ -168,52 +171,63 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
     Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0);
     CentroidalState(SimRobot, COMPos, COMVel);
 
-    std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
-    std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
-    std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, SDFInfo);
-
-    /* 3. Failure Metric using PVK-HJB assumption*/
-    int FailureFlag;
-    std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, FailureFlag);
-    /* 2. Failure Metric using PVK-CP assumption*/
-    double CPCEObjective = CPCEGenerator(PIPTotal);
-    std::printf("PVK-CP: %f\n", CPCEObjective);
-    PVKCPTraj[StepIndex] = CPCEObjective;
-
-    // Projection to ground
-    std::vector<Vector3> ProjActContactPositions;
-    ProjActContactPositions.reserve(ActContactPositions.size());
-    double LowestHeight = 100.0;
-    for (int j = 0; j < ActContactPositions.size(); j++)
-    {
-      if(LowestHeight>ActContactPositions[j].z)
-      {
-        LowestHeight = ActContactPositions[j].z;
-      }
-    }
-
-    for (int j = 0; j < ActContactPositions.size(); j++)
-    {
-      Vector3 ProjActContact(ActContactPositions[j].x, ActContactPositions[j].y, LowestHeight);
-      ProjActContactPositions.push_back(ProjActContact);
-    }
-
-    std::vector<double> PIPObj;
-    double PVKHJBMargin = 0.0;
-    double HJBSPObjective = 0.0;
-    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
-
-    // Capture Point which is a 2D versino of PVK-CP
-    double CPMargin = 0.0;
-    double CPObjective = CPCEGeneratorAnalysis(PIPSPTotal, CPMargin);
-    CPTraj[StepIndex] = CPObjective;
-    std::printf("CP: %f\n", CPObjective);
+    COMx[StepIndex] = COMPos.x;             COMy[StepIndex] = COMPos.y;               COMz[StepIndex] = COMPos.z;
+    COMVelx[StepIndex] = COMVel.x;          COMVely[StepIndex] = COMVel.y;            COMVelz[StepIndex] = COMVel.z;
+    //
+    // std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
+    // std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
+    // std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, SDFInfo);
+    //
+    // /* 3. Failure Metric using PVK-HJB assumption*/
+    // int FailureFlag;
+    // std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, FailureFlag);
+    // /* 2. Failure Metric using PVK-CP assumption*/
+    // double CPCEObjective = CPCEGenerator(PIPTotal);
+    // std::printf("PVK-CP: %f\n", CPCEObjective);
+    // PVKCPTraj[StepIndex] = CPCEObjective;
+    //
+    // // Projection to ground
+    // std::vector<Vector3> ProjActContactPositions;
+    // ProjActContactPositions.reserve(ActContactPositions.size());
+    // double LowestHeight = 100.0;
+    // for (int j = 0; j < ActContactPositions.size(); j++)
+    // {
+    //   if(LowestHeight>ActContactPositions[j].z)
+    //   {
+    //     LowestHeight = ActContactPositions[j].z;
+    //   }
+    // }
+    //
+    // for (int j = 0; j < ActContactPositions.size(); j++)
+    // {
+    //   Vector3 ProjActContact(ActContactPositions[j].x, ActContactPositions[j].y, LowestHeight);
+    //   ProjActContactPositions.push_back(ProjActContact);
+    // }
+    //
+    // std::vector<double> PIPObj;
+    // double PVKHJBMargin = 0.0;
+    // double HJBSPObjective = 0.0;
+    // std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
+    //
+    // // Capture Point which is a 2D versino of PVK-CP
+    // double CPMargin = 0.0;
+    // double CPObjective = CPCEGeneratorAnalysis(PIPSPTotal, CPMargin);
+    // CPTraj[StepIndex] = CPObjective;
+    // std::printf("CP: %f\n", CPObjective);
 
     StepIndex = StepIndex + 1;
   }
 
-  ObjTrajWriter(PVKCPTraj, FileIndex, "PVKCP");
-  ObjTrajWriter(CPTraj, FileIndex, "CP");
+  // Here the job is to write down the centroidal trajectories.
+  ObjTrajWriter(COMx, FileIndex, "COMx");
+  ObjTrajWriter(COMy, FileIndex, "COMy");
+  ObjTrajWriter(COMz, FileIndex, "COMz");
+  ObjTrajWriter(COMVelx, FileIndex, "COMVelx");
+  ObjTrajWriter(COMVely, FileIndex, "COMVely");
+  ObjTrajWriter(COMVelz, FileIndex, "COMVelz");
+
+  // ObjTrajWriter(PVKCPTraj, FileIndex, "PVKCP");
+  // ObjTrajWriter(CPTraj, FileIndex, "CP");
 
   return;
 }
