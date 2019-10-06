@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi0.xml";
+  string XMLFileStr = FolderPath + "/Envi2.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -33,26 +33,26 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
 
   /* 3. Signed Distance Field Computation */
   const int GridsNo = 251;
-  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
-  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
+  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
+  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
 
   std::vector<Config>  qTraj;
   std::vector<double> COMVelx, COMVely, COMVelz;
   Robot SimRobot = *world.robots[0];
 
-  // // Post-data process for Capture Point
-  // CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
+  // Post-data process for Capture Point
+  CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
 
   /* 4. Robot State Loader */
 
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTest.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTester.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp0.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
+  RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp4.config");
@@ -188,7 +188,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
 int main()
 {
-  string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/";
+  string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/2.25/";
   bool VKFastFlag = false;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
   for (int i = 0; i < 251; i++)
