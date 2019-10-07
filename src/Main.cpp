@@ -33,15 +33,15 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
 
   /* 3. Signed Distance Field Computation */
   const int GridsNo = 251;
-  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
-  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
+  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
+  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
 
   std::vector<Config>  qTraj;
   std::vector<double> COMVelx, COMVely, COMVelz;
   Robot SimRobot = *world.robots[0];
 
-  // Post-data process for Capture Point
-  CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
+  // // Post-data process for Capture Point
+  // CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
 
   /* 4. Robot State Loader */
 
@@ -153,22 +153,31 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   // In addition, its centroidal direction will also be sampled.
   std::random_device rd;
   std::mt19937 gen(rd());
+
+  // // Case 1
+  // double KELow = 0.0;
+
+  // // Case 3
+  // double KELow = 15.0;
+
+  // Case 5
   double KELow = 0.0;
-  // // Case 1/3/5
-  // double KEUpp = 50.0;
-  // Case 7
+
   double KEUpp = 50.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
   double xLimit, yLimit, zLimit;
 
-  // Case 1
-  xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
-  // // Case 3/5
-  // xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
-  // Case 7
-  // xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.15;
+  // // Case 1
+  // xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
+
+  // // Case 3
+  // xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
+
+  // Case 5
+  xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
+
   std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
   std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
   std::uniform_real_distribution<> zDirectionDis(-zLimit, zLimit);
@@ -191,7 +200,7 @@ int main()
   string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/2.25/";
   bool VKFastFlag = false;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
-  for (int i = 0; i < 251; i++)
+  for (int i = 0; i < 551; i++)
   {
     if(i%5==0)
     {
