@@ -85,8 +85,8 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigWriter(KeyConfig, UserFilePath, "Frame4.config");
 
     /* 6. Initial State Optimization */
-  bool ConfigOptFlag = true;
-  bool VelocityOptFlag = false;
+  bool ConfigOptFlag = false;
+  bool VelocityOptFlag = true;
   bool InitFlag = InitialStateOptFn(SimRobot, RobotLinkInfo, RobotContactInfo, SDFInfo, RobotConfigRef, KEInit, CentDirection, InitRobotConfig, InitRobotVelocity, ConfigOptFlag, VelocityOptFlag);
   switch (InitFlag)
   {
@@ -184,14 +184,14 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
   double xLimit, yLimit, zLimit;
 
-  // // Case 1
-  // xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
+  // Case 1
+  xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
 
   // // Case 3
   // xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
 
-  // Case 5
-  xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
+  // // Case 5
+  // xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
 
   std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
   std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
