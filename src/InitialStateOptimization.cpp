@@ -62,7 +62,7 @@ struct InitialConfigOpt: public NonlinearOptimizerInfo
     SimRobotObj.UpdateConfig(ConfigOptNew);     // Here both the SimRobot.q and robot frames have already been updated.
     double ConfigVia = 0.0;
     for (int i = 0; i <nVar; i++)
-    // for (int i = 0; i <6; i++)
+    // for (int i = 3; i <6; i++)
     {
       ConfigVia +=(ConfigOpt[i] - RobotConfigRef[i]) * (ConfigOpt[i] - RobotConfigRef[i]);
     }
@@ -213,7 +213,6 @@ static void InitialConfigOptFn(std::vector<double> &RobotConfig)
   InitialConfigOptProblem.NonlinearProb.setIntParameter("Minor print level", 0);
   /*
   ProblemOptions seting
-
   */
   // Solve with Finite-Difference
   InitialConfigOptProblem.ProblemOptionsUpdate(0, 3);

@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi2.xml";
+  string XMLFileStr = FolderPath + "/Envi0.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -47,16 +47,21 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
 
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTest.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTester.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "FrameOpt.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Frame3.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Frame2_75.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp0.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
+  RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp4.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp4_Load.config");
+
+  std::vector<double> KeyConfig(SimRobot.q.size());
 
   std::vector<double> InitRobotConfig(SimRobot.q.size()), InitRobotVelocity(SimRobot.q.size()), ZeroRobotVelocity(SimRobot.q.size());
   std::vector<double> RobotConfigRef(SimRobot.q.size());
@@ -69,9 +74,19 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   }
   SimRobot.dq = InitRobotVelocity;
 
-  /* 6. Initial State Optimization */
-  bool ConfigOptFlag = false;
-  bool VelocityOptFlag = true;
+  Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0), COMAcc(0.0, 0.0, 0.0);
+  CentroidalState(SimRobot, COMPos, COMVel);
+
+  // std::vector<double> KeyConfig5 = KeyFrameMirror(SimRobot.q);
+  // RobotConfigWriter(KeyConfig5, UserFilePath, "KeyConfig5.config");
+
+
+  // bool KeyOptFlag = KeyFrameOptimization(SimRobot, RobotLinkInfo, RobotContactInfo, SDFInfo, RobotConfigRef, KeyConfig);
+  // RobotConfigWriter(KeyConfig, UserFilePath, "Frame4.config");
+
+    /* 6. Initial State Optimization */
+  bool ConfigOptFlag = true;
+  bool VelocityOptFlag = false;
   bool InitFlag = InitialStateOptFn(SimRobot, RobotLinkInfo, RobotContactInfo, SDFInfo, RobotConfigRef, KEInit, CentDirection, InitRobotConfig, InitRobotVelocity, ConfigOptFlag, VelocityOptFlag);
   switch (InitFlag)
   {

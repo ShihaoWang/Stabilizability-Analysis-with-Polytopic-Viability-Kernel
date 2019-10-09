@@ -204,8 +204,9 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     ZSCTraj[StepIndex] = ZSCObjective;
 
     // Projection to ground
-    std::vector<Vector3> ProjActContactPositions;
+    std::vector<Vector3> ProjActContactPositions, ZeroContactVelocities;
     ProjActContactPositions.reserve(ActContactPositions.size());
+    ZeroContactVelocities.reserve(ActVelocities.size());
     double LowestHeight = 100.0;
     for (int j = 0; j < ActContactPositions.size(); j++)
     {
@@ -219,12 +220,15 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     {
       Vector3 ProjActContact(ActContactPositions[j].x, ActContactPositions[j].y, LowestHeight);
       ProjActContactPositions.push_back(ProjActContact);
+
+      Vector3 ZeroContactVelocity(0.0, 0.0, 0.0);
+      ZeroContactVelocities.push_back(ZeroContactVelocity);
     }
 
     std::vector<double> PIPObj;
     double PVKHJBMargin = 0.0;
     double HJBSPObjective = 0.0;
-    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
+    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ZeroContactVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
 
     // Orbital Energy which is a 2D version of PVK-RB
     double OEMargin = 0.0;
@@ -287,8 +291,11 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
       break;
     }
 
-    TrajAppender(StateTrajNames[0], qTrajAct[qTrajAct.size()-1], DOF);
-    TrajAppender(StateTrajNames[1], qdotTrajAct[qdotTrajAct.size()-1], DOF);
+    // TrajAppender(StateTrajNames[0], qTrajAct[qTrajAct.size()-1], DOF);
+    // TrajAppender(StateTrajNames[1], qdotTrajAct[qdotTrajAct.size()-1], DOF);
+
+    TrajAppender(StateTrajNames[0], SimRobot.q, DOF);
+    TrajAppender(StateTrajNames[1], SimRobot.dq, DOF);
 
     // Send the control command!
     Config qDesired(qDes);

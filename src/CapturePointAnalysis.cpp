@@ -83,55 +83,7 @@ static void qTrajNqdotTrajLoader(const string & UserPath, const int& FileIndex, 
   {
     std::cerr<<"Wrong! State velocity txt cannot be found!"<<endl;
   }
-  //
-  // // The last file to be loaded is the Centroidal velocity.
-  // string COMVelxFile = "COMVelxTraj" + std::to_string(FileIndex) + ".txt";
-  // string COMVelxFilePath = UserPath + COMVelxFile;
-  // ifstream COMVelxfile(COMVelxFilePath);
-  // if (COMVelxfile.is_open())
-  // {
-  //   while (getline(COMVelxfile, str_line) )
-  //   {
-  //     COMVelx.push_back(std::stoi(str_line));
-  //   }
-  //   COMVelxfile.close();
-  // }
-  // else
-  // {
-  //   std::cerr<<"Wrong! COMVel x txt cannot be found!"<<endl;
-  // }
-  //
-  // string COMVelyFile = "COMVelyTraj" + std::to_string(FileIndex) + ".txt";
-  // string COMVelyFilePath = UserPath + COMVelyFile;
-  // ifstream COMVelyfile(COMVelyFilePath);
-  // if (COMVelyfile.is_open())
-  // {
-  //   while (getline(COMVelyfile, str_line) )
-  //   {
-  //     COMVely.push_back(std::stoi(str_line));
-  //   }
-  //   COMVelyfile.close();
-  // }
-  // else
-  // {
-  //   std::cout<<"Wrong! COMVel y txt cannot be found!"<<endl;
-  // }
-  //
-  // string COMVelzFile = "COMVelzTraj" + std::to_string(FileIndex) + ".txt";
-  // string COMVelzFilePath = UserPath + COMVelzFile;
-  // ifstream COMVelzfile(COMVelzFilePath);
-  // if (COMVelzfile.is_open())
-  // {
-  //   while (getline(COMVelzfile, str_line) )
-  //   {
-  //     COMVelz.push_back(std::stoi(str_line));
-  //   }
-  //   COMVelzfile.close();
-  // }
-  // else
-  // {
-  //   std::cerr<<"Wrong! COMVel z txt cannot be found!"<<endl;
-  // }
+
   return;
 }
 
@@ -173,58 +125,58 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
 
     COMx[StepIndex] = COMPos.x;             COMy[StepIndex] = COMPos.y;               COMz[StepIndex] = COMPos.z;
     COMVelx[StepIndex] = COMVel.x;          COMVely[StepIndex] = COMVel.y;            COMVelz[StepIndex] = COMVel.z;
-    //
-    // std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
-    // std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
-    // std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, SDFInfo);
-    //
-    // /* 3. Failure Metric using PVK-HJB assumption*/
-    // int FailureFlag;
-    // std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, FailureFlag);
-    // /* 2. Failure Metric using PVK-CP assumption*/
-    // double CPCEObjective = CPCEGenerator(PIPTotal);
-    // std::printf("PVK-CP: %f\n", CPCEObjective);
-    // PVKCPTraj[StepIndex] = CPCEObjective;
-    //
-    // // Projection to ground
-    // std::vector<Vector3> ProjActContactPositions;
-    // ProjActContactPositions.reserve(ActContactPositions.size());
-    // double LowestHeight = 100.0;
-    // for (int j = 0; j < ActContactPositions.size(); j++)
-    // {
-    //   if(LowestHeight>ActContactPositions[j].z)
-    //   {
-    //     LowestHeight = ActContactPositions[j].z;
-    //   }
-    // }
-    //
-    // for (int j = 0; j < ActContactPositions.size(); j++)
-    // {
-    //   Vector3 ProjActContact(ActContactPositions[j].x, ActContactPositions[j].y, LowestHeight);
-    //   ProjActContactPositions.push_back(ProjActContact);
-    // }
-    //
-    // std::vector<double> PIPObj;
-    // double PVKHJBMargin = 0.0;
-    // double HJBSPObjective = 0.0;
-    // std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
-    //
-    // // Capture Point which is a 2D versino of PVK-CP
-    // double CPMargin = 0.0;
-    // double CPObjective = CPCEGeneratorAnalysis(PIPSPTotal, CPMargin);
-    // CPTraj[StepIndex] = CPObjective;
-    // std::printf("CP: %f\n", CPObjective);
+
+    std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
+    std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
+    std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, SDFInfo);
+
+    /* 3. Failure Metric using PVK-HJB assumption*/
+    int FailureFlag;
+    std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, FailureFlag);
+    /* 2. Failure Metric using PVK-CP assumption*/
+    double CPCEObjective = CPCEGenerator(PIPTotal);
+    std::printf("PVK-CP: %f\n", CPCEObjective);
+    PVKCPTraj[StepIndex] = CPCEObjective;
+
+    // Projection to ground
+    std::vector<Vector3> ProjActContactPositions;
+    ProjActContactPositions.reserve(ActContactPositions.size());
+    double LowestHeight = 100.0;
+    for (int j = 0; j < ActContactPositions.size(); j++)
+    {
+      if(LowestHeight>ActContactPositions[j].z)
+      {
+        LowestHeight = ActContactPositions[j].z;
+      }
+    }
+
+    for (int j = 0; j < ActContactPositions.size(); j++)
+    {
+      Vector3 ProjActContact(ActContactPositions[j].x, ActContactPositions[j].y, LowestHeight);
+      ProjActContactPositions.push_back(ProjActContact);
+    }
+
+    std::vector<double> PIPObj;
+    double PVKHJBMargin = 0.0;
+    double HJBSPObjective = 0.0;
+    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
+
+    // Capture Point which is a 2D versino of PVK-CP
+    double CPMargin = 0.0;
+    double CPObjective = CPCEGeneratorAnalysis(PIPSPTotal, CPMargin);
+    CPTraj[StepIndex] = CPObjective;
+    std::printf("CP: %f\n", CPObjective);
 
     StepIndex = StepIndex + 1;
   }
 
-  // Here the job is to write down the centroidal trajectories.
-  ObjTrajWriter(COMx, FileIndex, "COMx");
-  ObjTrajWriter(COMy, FileIndex, "COMy");
-  ObjTrajWriter(COMz, FileIndex, "COMz");
-  ObjTrajWriter(COMVelx, FileIndex, "COMVelx");
-  ObjTrajWriter(COMVely, FileIndex, "COMVely");
-  ObjTrajWriter(COMVelz, FileIndex, "COMVelz");
+  // // Here the job is to write down the centroidal trajectories.
+  // ObjTrajWriter(COMx, FileIndex, "COMx");
+  // ObjTrajWriter(COMy, FileIndex, "COMy");
+  // ObjTrajWriter(COMz, FileIndex, "COMz");
+  // ObjTrajWriter(COMVelx, FileIndex, "COMVelx");
+  // ObjTrajWriter(COMVely, FileIndex, "COMVely");
+  // ObjTrajWriter(COMVelz, FileIndex, "COMVelz");
 
   // ObjTrajWriter(PVKCPTraj, FileIndex, "PVKCP");
   // ObjTrajWriter(CPTraj, FileIndex, "CP");
@@ -235,10 +187,11 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
 void CapturePointAnalysis(Robot & SimRobot, ViabilityKernelInfo & VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo)
 {
   // This function is use to generate data analysis for experimentation trajectories.
-  string UserPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/Data/";
+  string UserPath = "/home/motion/Desktop/Data/Case 1/";
   for (int i = 0; i < 250; i++)
   {
     int FileIndex = i + 1;
+    FileIndex = 140;
     std::vector<Config> qTraj, qdotTraj;
     qTrajNqdotTrajLoader(UserPath, FileIndex, qTraj, qdotTraj);
     CPEvaluation(FileIndex, SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo, qTraj, qdotTraj);
