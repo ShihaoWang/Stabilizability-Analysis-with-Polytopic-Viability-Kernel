@@ -619,6 +619,8 @@ static Vector3 FindCorrespondingVelocity(const Vector3 & Point, const std::vecto
 std::vector<PIPInfo> ContactEdgesGenerationSP(const std::vector<Vector3> &CPVertices, const std::vector<Vector3> &ActVelocities, const std::vector<int> & ActStatus, const Vector3& COM, const Vector3& COMVel, int & FailureFlag)
 {
   std::vector<PIPInfo> PIPTotal;
+  std::vector<Vector3> SPVertices;
+
   FailureFlag = 0;
   int ActPointNumber = 0;
   for (int i = 0; i < ActStatus.size(); i++)
@@ -629,32 +631,62 @@ std::vector<PIPInfo> ContactEdgesGenerationSP(const std::vector<Vector3> &CPVert
   {
     case 0:
     {
+      SPVertices.reserve(3);
+      for (int i = 0; i < 3; i++)
+      {
+        Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
+        SPVertices.push_back(SPVertex);
+      }
       FailureFlag = 1;
     }
     break;
     case 1:
     {
+      SPVertices.reserve(3);
+      for (int i = 0; i < 3; i++)
+      {
+        Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
+        SPVertices.push_back(SPVertex);
+      }
       FailureFlag = 1;
     }
     break;
     case 2:
     {
+      SPVertices.reserve(3);
+      for (int i = 0; i < 3; i++)
+      {
+        Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
+        SPVertices.push_back(SPVertex);
+      }
       FailureFlag = 1;
     }
     break;
     default:
     {
+      // Contact Number greater than 3
+      SPVertices.reserve(ActPointNumber);
+      for (int i = 0; i < CPVertices.size(); i++)
+      {
+        switch (ActStatus[i])
+        {
+          case 1:
+          {
+            Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
+            SPVertices.push_back(SPVertex);
+          }
+          break;
+          default:
+          {
+          }
+          break;
+        }
+      }
     }
     break;
   }
 
-  std::vector<Vector3> SPVertices;
-  SPVertices.reserve(CPVertices.size());
-  for (int i = 0; i < CPVertices.size(); i++)
-  {
-    Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
-    SPVertices.push_back(SPVertex);
-  }
+
   // Now all the points have already been projected into a 2D plane
   int FacetFlag = 0;
   FacetInfo FlatConvexHullObj= FlatContactHullGeneration(SPVertices, FacetFlag);

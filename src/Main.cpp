@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi0.xml";
+  string XMLFileStr = FolderPath + "/Envi3.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -51,15 +51,16 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigLoader(SimRobot, UserFilePath, "Frame3.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Frame2_75.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp0.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
+  RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp4.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp4_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Case6.config");
 
   std::vector<double> KeyConfig(SimRobot.q.size());
 
@@ -85,7 +86,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigWriter(KeyConfig, UserFilePath, "Frame4.config");
 
     /* 6. Initial State Optimization */
-  bool ConfigOptFlag = false;
+  bool ConfigOptFlag = true;
   bool VelocityOptFlag = true;
   bool InitFlag = InitialStateOptFn(SimRobot, RobotLinkInfo, RobotContactInfo, SDFInfo, RobotConfigRef, KEInit, CentDirection, InitRobotConfig, InitRobotVelocity, ConfigOptFlag, VelocityOptFlag);
   switch (InitFlag)
@@ -169,29 +170,35 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   std::random_device rd;
   std::mt19937 gen(rd());
 
-  // // Case 1
-  // double KELow = 0.0;
-
-  // // Case 3
-  // double KELow = 15.0;
-
-  // Case 5
   double KELow = 0.0;
 
+  // // Case 1
+  // double KEUpp = 50.0;
+
+  // // Case 3
+  // double KEUpp = 50.0;
+
+  // // Case 4
+  // double KEUpp = 50.0;
+
+  // Case 6
   double KEUpp = 50.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
   double xLimit, yLimit, zLimit;
 
-  // Case 1
-  xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
+  // // Case 1
+  // xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
 
   // // Case 3
   // xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
 
-  // // Case 5
-  // xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
+  // // Case 4
+  // xLimit = 0.20;  yLimit = 0.25;  zLimit = 0.1;
+
+  // Case 6
+  xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
 
   std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
   std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
