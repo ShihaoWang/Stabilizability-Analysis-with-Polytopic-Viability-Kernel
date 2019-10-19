@@ -396,12 +396,12 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
       string str_line;
       string TerrainCollisionPath = UserFilePath + "TerrainCollision.txt";
       ifstream TerrainInfofile (TerrainCollisionPath);
-      int TerrainCollisionFlag = 0;
+      int TCFlag = 0;
       if (TerrainInfofile.is_open())
       {
         while (getline (TerrainInfofile, str_line) )
         {
-          TerrainCollisionFlag = stoi(str_line);
+          TCFlag = stoi(str_line);
         }
         TerrainInfofile.close();
       }
@@ -409,8 +409,7 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
       {
         std::cerr<<"Wrong! TerrainCollision.txt cannot be found!"<<endl;
       }
-
-      switch (TerrainCollisionFlag)
+      switch (TCFlag)
       {
         case 0:
         {
@@ -424,9 +423,6 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
         break;
       }
     }
-
-    int aaa = 1;
-
     // Now it is time to enable another world file for simulation test and collision test with environment objects.
     RobotWorld world;
     SimGUIBackend Backend(&world);
@@ -452,29 +448,35 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
     {
       std::cerr<<"World XML file path does not exist!"<<endl;
     }
-    const int NumberOfTerrains = world.terrains.size();
-    for (int i = 6; i < SimRobotObj.q.size(); i++)
+
+    // We need to simulate this robot for awhile to make sure it can be stabilized at its current configuration.
+    double t_imp = 1.0;
+    // Here first we would like to run the simulation for a certain amount of time to ensure the contact is well established.
+    double  dt = 0.1;
+
+    Vector3 COMPosInit(0.0, 0.0, 0.0), COMVelInit(0.0, 0.0, 0.0);
+    CentroidalState(*Sim.world->robots[0], COMPosInit, COMVelInit);
+    while(Sim.time <= t_imp)
     {
-      int Linkid = world.RobotLinkID(0, i);
-      Meshing::TriMesh LinkiTriMesh = world.GetGeometry(Linkid)->AsTriangleMesh();
-      CollisionMesh LinkiTriMeshTopology(LinkiTriMesh);
-      LinkiTriMeshTopology.InitCollisions();
-      LinkiTriMeshTopology.CalcTriNeighbors();
-      for (int j = 0; j < NumberOfTerrains; j++)
-      {
-        Meshing::TriMesh EnviTriMesh  = world.terrains[j]->geometry->AsTriangleMesh();
-        CollisionMesh EnviTriMeshTopology(EnviTriMesh);
-        EnviTriMeshTopology.InitCollisions();
-        EnviTriMeshTopology.CalcTriNeighbors();
-        CollisionMeshQuery CollisionMeshes(LinkiTriMeshTopology, EnviTriMeshTopology);
-        bool CollsiionCheck = CollisionMeshes.Collide();
-        if (CollsiionCheck == true)
-        {
-          std::printf("Link %d and Terrain %d are in collision!\n", i, j);
-        }
-      }
+      Sim.Advance(dt);
+      Sim.UpdateModel();
     }
-    int a = 1;
+    Vector3 COMPosFinal(0.0, 0.0, 0.0), COMVelFinal(0.0, 0.0, 0.0);
+    CentroidalState(*Sim.world->robots[0], COMPosFinal, COMVelFinal);
+    double DiffVio_x = COMPosFinal.x - COMPosInit.x;
+    double DiffVio_y = COMPosFinal.y - COMPosInit.y;
+    double DiffVio_z = COMPosFinal.z - COMPosInit.z;
+
+    double DiffVio = sqrt(DiffVio_x * DiffVio_x + DiffVio_y * DiffVio_y + DiffVio_z * DiffVio_z);
+    if(DiffVio<0.01)
+    {
+      SimuPassFlag = 1;
+    }
+    else
+    {
+      SimuPassFlag = 0;
+    }
   }
+
   return InitConfig;
 }
