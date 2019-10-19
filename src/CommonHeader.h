@@ -88,7 +88,7 @@ double CPSPGenerator(const std::vector<Vector3> & ActContacts, const Vector3 & C
 double ZeroStepCapturabilityGenerator(const std::vector<Vector3> & ActContactPositions, const std::vector<Vector3> & ConeUnit, const int & EdgeNo, const Vector3& COMPos, const Vector3& COMVel);
 
 /* 8. Simulation Test */
-void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo, SimGUIBackend & Backend, const std::vector<Vector3> & ContactPositionRef, const Vector3 & CentDirection, const double & dt, const int & FileIndex);
+void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo, SimGUIBackend & Backend, const double & dt, const int & FileIndex);
 
 /* 9. Stabilizing Controller */
 std::vector<double> QPController(std::vector<Config> & qTraj, std::vector<Config> & qdotTraj, std::vector<Config> & qddotTraj, std::vector<Config> & qTrajAct, std::vector<Config> & qdotTrajAct, int & QPStatus, const std::vector<Matrix> & ActJacobian, const std::vector<Vector3>& ConeAllUnit, ParaStructure & ParaStruct);

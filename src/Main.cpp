@@ -79,30 +79,38 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   std::vector<Vector3> FullPIPInters = FullPIPInterCal(FacetInfoObj, InitCOM);
   IntersectionsWriter(FullPIPInters, UserFilePath, "InitConfigIntersections.txt");
 
-  double t_imp = 2.0;
-  // Here first we would like to run the simulation for a certain amount of time to ensure the contact is well established.
-  double  dt          = 0.025;
+  // This part is to simulate robot's world file.
+
+  RobotWorld worldAct;
+  SimGUIBackend BackendAct(&worldAct);
+  WorldSimulation& SimAct = BackendAct.sim;
+
   int FileIndex = FileIndexFinder();
-  string stateTrajFile = "stateTraj" + std::to_string(FileIndex) + ".path";
-  const char *stateTrajFile_Name = stateTrajFile.c_str();
-  while(Sim.time <= t_imp)
+  XMLFileStr = FolderPath + "/build/Envi" + std::to_string(FileIndex) + ".xml";
+  XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
+  if(!BackendAct.LoadAndInitSim(XMLFile))
   {
-    Sim.Advance(dt);
-    Sim.UpdateModel();
-    Backend.DoStateLogging_LinearPath(0, stateTrajFile_Name);
+    std::cerr<<"Sample XML file path does not exist!"<<endl;
+    return true;
   }
 
-  Sim.world->robots[0]->dq = InitRobotVelocity;
+  double t_imp = 1.0;
+  // Here first we would like to run the simulation for a certain amount of time to ensure the contact is well established.
+  double  dt          = 0.025;
+  string stateTrajFile = "stateTraj" + std::to_string(FileIndex) + ".path";
+  const char *stateTrajFile_Name = stateTrajFile.c_str();
+  while(SimAct.time <= t_imp)
+  {
+    SimAct.Advance(dt);
+    SimAct.UpdateModel();
+    BackendAct.DoStateLogging_LinearPath(0, stateTrajFile_Name);
+  }
+  SimAct.world->robots[0]->dq = InitRobotVelocity;
   Config InitRobotVelocityImpl(InitRobotVelocity);
-  Sim.controlSimulators[0].oderobot->SetVelocities(InitRobotVelocityImpl);
-
-  std::vector<Vector3> ActContactPositionsRef, ActVelocitiesRef;
-  std::vector<Matrix> ActJacobiansRef;
-  std::vector<double> ActDistsRef;
-  ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositionsRef, ActVelocitiesRef, ActDistsRef, ActJacobiansRef, SDFInfo);
+  SimAct.controlSimulators[0].oderobot->SetVelocities(InitRobotVelocityImpl);
 
   /* 8. Internal Experimentation */
-  SimulationTest(Sim, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo, Backend, ActContactPositionsRef, CentDirection, dt, FileIndex);
+  SimulationTest(SimAct, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo, BackendAct, dt, FileIndex);
   return true;
 }
 
@@ -113,36 +121,15 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   std::random_device rd;
   std::mt19937 gen(rd());
 
+  // 2 contact
   double KELow = 0.0;
-
-  // // Case 1
-  // double KEUpp = 50.0;
-
-  // // Case 3
-  // double KEUpp = 50.0;
-
-  // // Case 4
-  // double KEUpp = 50.0;
-
-  // Case 6
-  double KEUpp = 75.0;
+  double KEUpp = 20.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
   double xLimit, yLimit, zLimit;
-
-  // // Case 1
-  // xLimit = 0.15;  yLimit = 0.1;  zLimit = 0.1;
-
-  // // Case 3
-  // xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
-
-  // // Case 4
-  // xLimit = 0.20;  yLimit = 0.25;  zLimit = 0.1;
-
   // Case 6
   xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
-
   std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
   std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
   std::uniform_real_distribution<> zDirectionDis(-zLimit, zLimit);
@@ -163,7 +150,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 int main()
 {
   string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/2.25/";
-  bool VKFastFlag = true;
+  bool VKFastFlag = false;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
   for (int i = 0; i < 551; i++)
   {
