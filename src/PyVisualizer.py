@@ -15,7 +15,7 @@ import numpy as np
 # This file contains functions related to
 
 # ExpName = "build/"
-ExpName = "build/ExpData/Case 4"
+ExpName = "build/"
 # ExpName = "build/ThreeContactVert"
 # ExpName = "build/HJBTwoContactFlat"
 # ExpName = "build/HJBFourContactFlat"
@@ -908,4 +908,4 @@ def main(*arg):
 if __name__ == "__main__":
     # main("Cover1", 0)
     # main("InitConfig", 0)
-    main("5.path", 2)
+    main("1.path", 2)

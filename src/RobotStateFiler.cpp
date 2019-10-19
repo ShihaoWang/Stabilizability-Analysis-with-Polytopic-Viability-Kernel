@@ -57,6 +57,51 @@ void RobotConfigLoader(Robot &SimRobot, const string &user_path, const string &f
   return;
 }
 
+void AvgContactWriter(const std::vector<Vector3> & AvgContacts, const string & UserPath)
+{
+  std::ofstream AvgContactInfoFile;
+  std::string AvgContactFilePath = UserPath + "AvgContacts.txt";
+  AvgContactInfoFile.open(AvgContactFilePath);
+  for (int i = 0; i < AvgContacts.size(); i++)
+  {
+    AvgContactInfoFile << std::to_string(AvgContacts[i].x)<<std::endl;
+    AvgContactInfoFile << std::to_string(AvgContacts[i].y)<<std::endl;
+    AvgContactInfoFile << std::to_string(AvgContacts[i].z)<<std::endl;
+  }
+  AvgContactInfoFile.close();
+}
+
+void YawAngleWriter(const std::vector<double> & YawAngles, const string &UserPath)
+{
+  std::ofstream YawInfoFile;
+  std::string YawFilePath = UserPath + "YawAngles.txt";
+  YawInfoFile.open(YawFilePath);
+  int AxesIndex = 0;
+  for (int i = 0; i < YawAngles.size(); i++)
+  {
+    YawInfoFile << std::to_string(YawAngles[i])<<std::endl;
+  }
+  YawInfoFile.close();
+}
+
+void RobotAxesWriter(const std::vector<double> & Axes, const std::vector<int> & LinkIndices, const string &UserPath)
+{
+  std::ofstream AxesInfoFile;
+  std::string AxesFilePath = UserPath + "Axes.txt";
+  AxesInfoFile.open(AxesFilePath);
+  int AxesIndex = 0;
+  for (int i = 0; i < Axes.size()/3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+    {
+      AxesInfoFile << std::to_string(Axes[AxesIndex])<<std::endl;
+      AxesIndex+=1;
+    }
+    AxesInfoFile << std::to_string(LinkIndices[i])<<std::endl;
+  }
+  AxesInfoFile.close();
+}
+
 void RobotConfigWriter(const std::vector<double> & Config, const string &user_path, const string &config_file_name)
 {
   std::ofstream ConfigInfoFile;

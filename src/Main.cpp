@@ -13,7 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi3.xml";
+  string XMLFileStr = FolderPath + "/Envi0.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -42,9 +42,10 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
 
   // // Post-data process for Capture Point
   // CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
+  // system("pause");
 
   /* 4. Robot State Loader */
-
+  RobotConfigLoader(SimRobot, UserFilePath, "Test.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTest.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTester.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "FrameOpt.config");
@@ -57,7 +58,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
-  RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
+  // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp4.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Exp4_Load.config");
   // RobotConfigLoader(SimRobot, UserFilePath, "Case6.config");
@@ -86,8 +87,8 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   // RobotConfigWriter(KeyConfig, UserFilePath, "Frame4.config");
 
     /* 6. Initial State Optimization */
-  bool ConfigOptFlag = true;
-  bool VelocityOptFlag = true;
+  bool ConfigOptFlag = false;
+  bool VelocityOptFlag = false;
   bool InitFlag = InitialStateOptFn(SimRobot, RobotLinkInfo, RobotContactInfo, SDFInfo, RobotConfigRef, KEInit, CentDirection, InitRobotConfig, InitRobotVelocity, ConfigOptFlag, VelocityOptFlag);
   switch (InitFlag)
   {
@@ -103,6 +104,13 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
     break;
   }
   RobotConfigWriter(InitRobotConfig, UserFilePath, "InitConfig.config");
+
+  RobotLink3D Link_i = SimRobot.links[17];
+
+  Vector3 Link_i_EulerAngles = RotMat2EulerAngles(Link_i.T_World.R);
+
+  int coLFlag = 0;
+  std::vector<double> SPInitConfig = InitEnviGenerator(SimRobot, RobotLinkInfo, RobotContactInfo, UserFilePath, coLFlag);
 
   SimRobot.UpdateConfig(Config(InitRobotConfig));
   SimRobot.dq = InitRobotVelocity;
@@ -123,7 +131,8 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   /* 7. Projected Inverted Pendulum Plot*/
   std::vector<Vector3> ActContactPositions, ActVelocities;
   std::vector<Matrix> ActJacobians;
-  std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, SDFInfo);
+  std::vector<double> ActDists;
+  std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActDists, ActJacobians, SDFInfo);
 
   std::vector<Vector3> CPVertex, CPEdgeA, CPEdgeB;
   std::vector<FacetInfo> FacetInfoObj = ContactHullGeneration(ActContactPositions, CPVertex, CPEdgeA, CPEdgeB);      // This function output is only used for visualization purpose.
@@ -132,7 +141,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   Vector3 InitCOM = SimRobot.GetCOM();
   //  std::vector<PIPInfo> PIPTotal = ContactEdgesGeneration(CPVertex,  CPEdgeA, CPEdgeB, InitCOM, InitCOM, SDFInfo);
   int FailureFlag;
-  std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActStatus, InitCOM, InitCOM, FailureFlag);   // SP denotes SP projection approach.
+  std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActDists, ActStatus, InitCOM, InitCOM, FailureFlag);   // SP denotes SP projection approach.
   PIPsWriter(PIPTotal, UserFilePath, "InitConfigPIPs.txt");
   std::vector<Vector3> FullPIPInters = FullPIPInterCal(FacetInfoObj, InitCOM);
   IntersectionsWriter(FullPIPInters, UserFilePath, "InitConfigIntersections.txt");
@@ -156,7 +165,8 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
 
   std::vector<Vector3> ActContactPositionsRef, ActVelocitiesRef;
   std::vector<Matrix> ActJacobiansRef;
-  ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositionsRef, ActVelocitiesRef, ActJacobiansRef, SDFInfo);
+  std::vector<double> ActDistsRef;
+  ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositionsRef, ActVelocitiesRef, ActDistsRef, ActJacobiansRef, SDFInfo);
 
   /* 8. Internal Experimentation */
   SimulationTest(Sim, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo, Backend, ActContactPositionsRef, CentDirection, dt, FileIndex);
@@ -182,7 +192,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   // double KEUpp = 50.0;
 
   // Case 6
-  double KEUpp = 50.0;
+  double KEUpp = 75.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
@@ -198,7 +208,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   // xLimit = 0.20;  yLimit = 0.25;  zLimit = 0.1;
 
   // Case 6
-  xLimit = 0.15;  yLimit = 0.25;  zLimit = 0.1;
+  xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
 
   std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
   std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
@@ -220,7 +230,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 int main()
 {
   string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/2.25/";
-  bool VKFastFlag = false;
+  bool VKFastFlag = true;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
   for (int i = 0; i < 551; i++)
   {

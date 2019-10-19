@@ -31,6 +31,10 @@ void IntersectionsWriter(const std::vector<Vector3> & Intersections, const strin
 bool InitialStateOptFn(Robot& _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const SignedDistanceFieldInfo& _SDFInfo, const std::vector<double>& _RobotConfigRef, const double & _KEInit, const Vector3& _CentDirection, std::vector<double> & RobotConfig, std::vector<double> & RobotVelocity, const bool & ConfigFlag, const bool & VelocityFlag);
 bool KeyFrameOptimization(Robot& _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const SignedDistanceFieldInfo& _SDFInfo, const std::vector<double>& _RobotConfigRef, std::vector<double> & RobotConfig);
 std::vector<double> KeyFrameMirror(const std::vector<double> &RobotConfig);
+std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const string & UserFilePath, int & coLFlag);
+void RobotAxesWriter(const std::vector<double> & Axes, const std::vector<int> & LinkIndices, const string &UserPath);
+void AvgContactWriter(const std::vector<Vector3> & AvgContacts, const string & UserPath);
+void YawAngleWriter(const std::vector<double> & YawAngles, const string &UserPath);
 
 /* 4. Robot Utility Functions */
 void SimRobotToRobotState(const Robot &_SimRobot, std::vector<double>& _Config, std::vector<double>& _Velocity);
@@ -47,7 +51,7 @@ std::vector<double> RandomVector(const int &length);
 void PIPPrint(const std::vector<PIPInfo>& PIPM);
 std::vector<double> Opt_Seed_Zip(const int& VariableLength, const double &T_tot, const Eigen::MatrixXd& Q_Traj, const Eigen::MatrixXd& Qdot_Traj, const Eigen::MatrixXd& Qddot_Traj, const Eigen::MatrixXd& Lambda_Traj, const Eigen::MatrixXd& U_Traj);
 void Opt_Seed_Unzip(double &T_tot, std::vector<double>& Q_Traj_Vec, std::vector<double>& Qdot_Traj_Vec, std::vector<double>& Qddot_Traj_Vec, std::vector<double>& Lambda_Traj_Vec, std::vector<double>& U_Traj_Vec, const std::vector<double>& Opt_Seed, const int& DOF, const int& ContactPointNo, const int & GridsNo);
-std::vector<int> ActContactNJacobian(const Robot& SimRobot, const std::vector<LinkInfo>& RobotLinkInfo, const std::vector<ContactStatusInfo>& RobotContactInfo, std::vector<Vector3>& ActContacts, std::vector<Vector3>& ActVelocities, std::vector<Matrix> & ActJacobians, SignedDistanceFieldInfo & SDFInfo);
+std::vector<int> ActContactNJacobian(const Robot& SimRobot, const std::vector<LinkInfo>& RobotLinkInfo, const std::vector<ContactStatusInfo>& RobotContactInfo, std::vector<Vector3>& ActContacts, std::vector<Vector3>& ActVelocities, std::vector<double> & ActDists, std::vector<Matrix> & ActJacobians, SignedDistanceFieldInfo & SDFInfo);
 double RandomValue(const double &bound);
 void ContactNumberFinder(const std::vector<ContactStatusInfo> & RobotContactInfo, int & InitContactNo, int & TotContactNo);
 int FileIndexFinder();
@@ -55,18 +59,18 @@ void CentroidalState(const Robot & SimRobot, Vector3 & COMPos, Vector3 & COMVel)
 void RobotContactInfoUpdate(std::vector<ContactStatusInfo> & RobotContactInfo, const Robot & SimRobot, const vector<LinkInfo> & RobotLinkInfo, const SignedDistanceFieldInfo & SDFInfo);
 int FallStatusFinder(const std::vector<double> & ObjTraj, const int & CutOffIndex);
 void ROCAppender(const double & TPR, const double & FPR, const int & CaseNumber, const int & CutOffIndex, const string FallDetector);
-
+Vector3 RotMat2EulerAngles(const Matrix3 & R);
 
 /* 5. Contact Polyhedron functions */
 FacetInfo FlatContactHullGeneration(const std::vector<Vector3> & _CPVertices, int& FacetFlag);
 std::vector<Vector3> ContactPolyhedronVertices(const Robot & SimRobot,const std::vector<LinkInfo> &RobotLinkInfo, const SignedDistanceFieldInfo& SDFInfo);
 std::vector<FacetInfo> ContactHullGeneration(const std::vector<Vector3>& _CPVertices, std::vector<Vector3> & CPVertex, std::vector<Vector3> & CPEdgeA, std::vector<Vector3> & CPEdgeB);
-std::vector<PIPInfo> ContactEdgesGenerationSP(const std::vector<Vector3> &CPVertices, const std::vector<Vector3> &ActVelocities, const std::vector<int> & ActStatus, const Vector3& COM, const Vector3& COMVel, int & FailureFlag);
+std::vector<PIPInfo> ContactEdgesGenerationSP(const std::vector<Vector3> & CPVertices, const std::vector<Vector3> & ActVelocities, const std::vector<double> & ActDists, const std::vector<int> & ActStatus, const Vector3& COM, const Vector3& COMVel, int & FailureFlag);
 std::vector<PIPInfo> ContactEdgesGeneration(const std::vector<Vector3> & CPVertex, const std::vector<Vector3> & CPEdgeA, const std::vector<Vector3> & CPEdgeB, const Vector3& COM, const Vector3& COMVel, const SignedDistanceFieldInfo & SDFInfo);
 int CollinearTest(const std::vector<Vector3> & _CPVertices);
 void ConeUnitGenerator(const std::vector<Vector3> & ActContacts, SignedDistanceFieldInfo& SDFInfo, std::vector<Vector3> & ConeAllUnit, std::vector<Vector3> & ConeUnits, const int & edge_no, const double & mu);
-std::vector<PIPInfo> PIPGenerator(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, const std::vector<const char*> & EdgeFileNames, ViabilityKernelInfo& VKObj, double & FailureMetric, const double & dt);
-std::vector<PIPInfo> PIPGeneratorAnalysis(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, ViabilityKernelInfo& VKObj, std::vector<double> & PIPObj, double & FailureMetric, const double & Margin, const double & dt);
+std::vector<PIPInfo> PIPGenerator(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<double> & ActDists,const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, const std::vector<const char*> & EdgeFileNames, ViabilityKernelInfo& VKObj, double & FailureMetric, const double & dt);
+std::vector<PIPInfo> PIPGeneratorAnalysis(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<double> & ActDists, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, ViabilityKernelInfo& VKObj, std::vector<double> & PIPObj, double & FailureMetric, const double & Margin, const double & dt);
 double RBGenerator(const std::vector<PIPInfo> & PIPTotal);
 double RBGeneratorAnalysis(const std::vector<PIPInfo> & PIPTotal, const double & Margin);
 double CPCEGenerator(const std::vector<PIPInfo> & PIPTotal);
@@ -74,7 +78,6 @@ double CPCEGeneratorAnalysis(const std::vector<PIPInfo> & PIPTotal, const double
 double ZMPGeneratorAnalysis(const std::vector<PIPInfo> & PIPTotal, const Vector3 & COMPos, const Vector3 & COMAcc, const double & Margin);
 double CPSPGenerator(const std::vector<Vector3> & ActContacts, const Vector3 & COM, const Vector3 & COMVel, const double & mass, const std::vector<Vector3> & ConeUnits, const int & edge_no);
 std::vector<Vector3> FullPIPInterCal(const std::vector<FacetInfo> & FacetInfoObj, const Vector3 & COM);
-std::vector<PIPInfo> PIPGeneratorSP(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, ViabilityKernelInfo & VKObj, std::vector<double> & PIPObj, double & FailureMetric, const double & dt);
 
 /* 6. Failure Metric functions */
 ViabilityKernelInfo ViabilityKernelDataLoader(const string & FailureMetricPath, const bool & FastFlag);

@@ -4,6 +4,7 @@
 #include <KrisLibrary/robotics/Inertia.h>
 #include <random>
 #include <limits>
+#include <Eigen/Geometry>
 using namespace std;
 
 void SimRobotToRobotState(const Robot &_SimRobot, std::vector<double>& _Config, std::vector<double>& _Velocity)
@@ -282,7 +283,7 @@ void RobotContactInfoUpdate(std::vector<ContactStatusInfo> & RobotContactInfo, c
   }
 }
 
-std::vector<int> ActContactNJacobian(const Robot& SimRobot, const std::vector<LinkInfo>& RobotLinkInfo, const std::vector<ContactStatusInfo>& RobotContactInfo, std::vector<Vector3>& ActContacts, std::vector<Vector3>& ActVelocities, std::vector<Matrix> & ActJacobians, SignedDistanceFieldInfo & SDFInfo)
+std::vector<int> ActContactNJacobian(const Robot& SimRobot, const std::vector<LinkInfo>& RobotLinkInfo, const std::vector<ContactStatusInfo>& RobotContactInfo, std::vector<Vector3>& ActContacts, std::vector<Vector3>& ActVelocities, std::vector<double> & ActDists, std::vector<Matrix> & ActJacobians, SignedDistanceFieldInfo & SDFInfo)
 {
   // This function is used to get the robot's current active end effector position and Jacobian matrices.
   double DistTol = 0.025;
@@ -304,6 +305,7 @@ std::vector<int> ActContactNJacobian(const Robot& SimRobot, const std::vector<Li
           ActVelocities.push_back(LinkiPjVel);
 
           double CurrentDist = SDFInfo.SignedDistance(LinkiPjPos);
+          ActDists.push_back(CurrentDist);
 
           if(CurrentDist>=DistTol)
           {
@@ -469,4 +471,28 @@ void ROCAppender(const double & TPR, const double & FPR, const int & CaseNumber,
   FPRFile<<std::to_string(FPR);
   FPRFile<<"\n";
   FPRFile.close();
+}
+
+Vector3 RotMat2EulerAngles(const Matrix3 & R)
+{
+
+  double M00 = R.data[0][0];
+  double M10 = R.data[0][1];
+  double M20 = R.data[0][2];
+
+  double M01 = R.data[1][0];
+  double M11 = R.data[1][1];
+  double M21 = R.data[1][2];
+
+  double M02 = R.data[2][0];
+  double M12 = R.data[2][1];
+  double M22 = R.data[2][2];
+
+  Eigen::Matrix3f RotMatrix;
+  RotMatrix <<  M00, M01, M02,
+                M10, M11, M12,
+                M20, M21, M22;
+  Eigen::Vector3f EulerAngles = RotMatrix.eulerAngles(2, 1, 0);
+
+  return Vector3(EulerAngles[0], EulerAngles[1], EulerAngles[2]);
 }

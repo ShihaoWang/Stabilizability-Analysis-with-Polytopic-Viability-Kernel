@@ -758,7 +758,8 @@ static std::vector<int> FailureMethodEvaluation(const int & ExpIndex, Robot& Sim
     std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
     std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
     std::vector<int> ActStatus;
-    ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, ActStatus, SDFInfo);
+    std::vector<double> ActDists;
+    ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActDists, ActJacobians, ActStatus, SDFInfo);
 
     double mu_t = mu * ZSCMargin;
     std::vector<Vector3> ConeAllUnit, ConeUnits;

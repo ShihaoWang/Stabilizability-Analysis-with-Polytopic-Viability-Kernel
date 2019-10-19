@@ -62,7 +62,8 @@ struct KeyFrameOpt: public NonlinearOptimizerInfo
 
     std::vector<Vector3> ContactPosNow, ActVelocitiesRef;
     std::vector<Matrix> ActJacobiansRef;
-    std::vector<int> ActStatus = ActContactNJacobian(SimRobotObj, RobotLinkInfo, RobotContactInfo, ContactPosNow, ActVelocitiesRef, ActJacobiansRef, SDFInfo);
+    std::vector<double> ActDistsRef;
+    std::vector<int> ActStatus = ActContactNJacobian(SimRobotObj, RobotLinkInfo, RobotContactInfo, ContactPosNow, ActVelocitiesRef, ActDistsRef, ActJacobiansRef, SDFInfo);
 
     // The objective is to make sure the contact points are not moving
     double ConfigVia = 0.0;
@@ -258,7 +259,8 @@ bool KeyFrameOptimization(Robot& _SimRobotObj, const std::vector<LinkInfo> & _Ro
 
   std::vector<Vector3> ActContactPositionsRef, ActVelocitiesRef;
   std::vector<Matrix> ActJacobiansRef;
-  std::vector<int> ActStatus = ActContactNJacobian(_SimRobotObj, RobotLinkInfo, RobotContactInfo, ActContactPositionsRef, ActVelocitiesRef, ActJacobiansRef, SDFInfo);
+  std::vector<double> ActDistsRef;
+  std::vector<int> ActStatus = ActContactNJacobian(_SimRobotObj, RobotLinkInfo, RobotContactInfo, ActContactPositionsRef, ActVelocitiesRef, ActDistsRef, ActJacobiansRef, SDFInfo);
 
   ContactPosRef = ActContactPositionsRef;
 

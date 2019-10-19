@@ -181,14 +181,15 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
 
     std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
     std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
-    std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, SDFInfo);
+    std::vector<double>   ActDists;
+    std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActDists, ActJacobians, SDFInfo);
 
     std::vector<Vector3> ConeShiftedUnits, ConeUnits;
     ConeUnitGenerator(ActContactPositions, SDFInfo, ConeShiftedUnits, ConeUnits, EdgeNumber, mu);
 
     /* 3. Failure Metric using PVK-HJB assumption*/
     double HJBObjective;
-    std::vector<PIPInfo> PIPTotal = PIPGenerator(ActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, EdgeFileNames, VKObj, HJBObjective, dt);
+    std::vector<PIPInfo> PIPTotal = PIPGenerator(ActContactPositions, ActVelocities, ActDists, ActStatus, COMPos, COMVel, EdgeFileNames, VKObj, HJBObjective, dt);
     PVKHJBTraj[StepIndex] = HJBObjective;
 
     /* 1. Failure Metric using PVK-RB assumption*/
@@ -228,7 +229,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     std::vector<double> PIPObj;
     double PVKHJBMargin = 0.0;
     double HJBSPObjective = 0.0;
-    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ZeroContactVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
+    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ZeroContactVelocities, ActDists, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
 
     // Orbital Energy which is a 2D version of PVK-RB
     double OEMargin = 0.0;

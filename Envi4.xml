@@ -21,7 +21,7 @@
   <terrain file="../../Klampt-examples/data/terrains/cube.off" scale="0.05 0.05 0.575" translation="1.1 -0.25 0.01">
      <display color="0.4 0.3 0.2"/>
   </terrain>
-  <terrain file="../../Klampt-examples/data/terrains/block.off" scale="0.15 0.15 0.575" translation="0.875 0.0 0.625" rotateX="0.25">
+  <terrain file="../../Klampt-examples/data/terrains/block.off" scale="0.15 0.15 0.575" translation="0.875 0.0 0.625" rotateX="0.25" rotateY="0.25">
      <display color="0.4 0.3 0.2"/>
   </terrain>
 

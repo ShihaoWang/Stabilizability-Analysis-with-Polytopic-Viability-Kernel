@@ -513,18 +513,16 @@ std::vector<FacetInfo> ContactHullGeneration(const std::vector<Vector3>& _CPVert
 static double ZCoordinate(const double& _X, const double &_Y, const std::vector<Vector3>& CPVertices, int & PtIndex)
 {
   // This function is used to select out the ZCoodrinate given _X and _Y.
-  double Eps_Tol = 1e-10;
-
+  std::vector<double> CPDist(CPVertices.size());
   for (int i = 0; i < CPVertices.size(); i++)
   {
     double Difference_i = (CPVertices[i].x - _X) * (CPVertices[i].x - _X) + (CPVertices[i].y - _Y) * (CPVertices[i].y - _Y);
-    if(Difference_i<Eps_Tol)
-    {
-      PtIndex = i;
-      return CPVertices[i].z;
-    }
+    CPDist[i] = Difference_i;
   }
-  return 0.0;
+  int minElementIndex = std::min_element(CPDist.begin(),CPDist.end()) - CPDist.begin();
+  PtIndex = minElementIndex;
+  double Z_Coor = CPVertices[PtIndex].z;
+  return Z_Coor;
 }
 
 std::vector<PIPInfo> ContactEdgesGeneration(const std::vector<Vector3> & CPVertex, const std::vector<Vector3> & CPEdgeA, const std::vector<Vector3> & CPEdgeB, const Vector3& COM, const Vector3& COMVel, const SignedDistanceFieldInfo & SDFInfo)
@@ -616,52 +614,67 @@ static Vector3 FindCorrespondingVelocity(const Vector3 & Point, const std::vecto
   return ActVelocity;
 }
 
-std::vector<PIPInfo> ContactEdgesGenerationSP(const std::vector<Vector3> &CPVertices, const std::vector<Vector3> &ActVelocities, const std::vector<int> & ActStatus, const Vector3& COM, const Vector3& COMVel, int & FailureFlag)
+static std::vector<Vector3> SPVerticesGene(const std::vector<int> & ActStatus, const int & ActPointNumber, const std::vector<double> & ActDists, const std::vector<Vector3> & CPVertices, int & FailureFlag)
 {
-  std::vector<PIPInfo> PIPTotal;
+  // This function is used to take into consideration the case robot's contact are not all active.
+  // Here this function is not generalized enough since we only consider the robot's contact point to be 4 on each end effector.
+
+  // First part is to get the most active end effector.
+  int EndPointNumber = 4;
+  const int EndNumber = ActDists.size()/EndPointNumber;
+  std::vector<double> EndMinVec(EndNumber);
+
+  int PointIndex = 0;
+  for (int i = 0; i < EndNumber; i++)
+  {
+    std::vector<double> EndEffectorDist(EndPointNumber);
+    for (int j = 0; j < EndPointNumber; j++)
+    {
+      EndEffectorDist[j] = ActDists[PointIndex];
+      PointIndex++;
+    }
+    // Here it is time to compare the values of end effectors
+    double min_value = *std::min_element(EndEffectorDist.begin(),EndEffectorDist.end());
+    EndMinVec[i] = min_value;
+  }
+
+  int EndIndex = std::min_element(EndMinVec.begin(), EndMinVec.end()) - EndMinVec.begin();
+
+  std::vector<Vector3> OneVertices;
+  OneVertices.reserve(EndPointNumber);
+  for (int i = 0; i < EndPointNumber; i++)
+  {
+    int CPVerticesIndex = EndIndex * EndPointNumber + i;
+    OneVertices.push_back(CPVertices[CPVerticesIndex]);
+  }
+
   std::vector<Vector3> SPVertices;
 
-  FailureFlag = 0;
-  int ActPointNumber = 0;
-  for (int i = 0; i < ActStatus.size(); i++)
-  {
-    ActPointNumber+= ActStatus[i];
-  }
   switch (ActPointNumber)
   {
     case 0:
     {
-      SPVertices.reserve(3);
-      for (int i = 0; i < 3; i++)
-      {
-        Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
-        SPVertices.push_back(SPVertex);
-      }
+      SPVertices = OneVertices;
       FailureFlag = 1;
     }
     break;
     case 1:
     {
-      SPVertices.reserve(3);
-      for (int i = 0; i < 3; i++)
-      {
-        Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
-        SPVertices.push_back(SPVertex);
-      }
+      SPVertices = OneVertices;
       FailureFlag = 1;
     }
     break;
     case 2:
     {
-      SPVertices.reserve(3);
-      for (int i = 0; i < 3; i++)
-      {
-        Vector3 SPVertex(CPVertices[i].x, CPVertices[i].y, 0.0);
-        SPVertices.push_back(SPVertex);
-      }
+      SPVertices = OneVertices;
       FailureFlag = 1;
     }
     break;
+    case 3:
+    {
+      SPVertices = OneVertices;
+      FailureFlag = 1;
+    }
     default:
     {
       // Contact Number greater than 3
@@ -685,7 +698,19 @@ std::vector<PIPInfo> ContactEdgesGenerationSP(const std::vector<Vector3> &CPVert
     }
     break;
   }
+  return SPVertices;
+}
 
+std::vector<PIPInfo> ContactEdgesGenerationSP(const std::vector<Vector3> & CPVertices, const std::vector<Vector3> & ActVelocities, const std::vector<double> & ActDists, const std::vector<int> & ActStatus, const Vector3& COM, const Vector3& COMVel, int & FailureFlag)
+{
+  std::vector<PIPInfo> PIPTotal;
+  FailureFlag = 0;
+  int ActPointNumber = 0;
+  for (int i = 0; i < ActStatus.size(); i++)
+  {
+    ActPointNumber+= ActStatus[i];
+  }
+  std::vector<Vector3> SPVertices = SPVerticesGene(ActStatus, ActPointNumber, ActDists, CPVertices, FailureFlag);
 
   // Now all the points have already been projected into a 2D plane
   int FacetFlag = 0;
@@ -751,10 +776,10 @@ void ConeUnitGenerator(const std::vector<Vector3> & ActContacts, SignedDistanceF
   }
 }
 
-std::vector<PIPInfo> PIPGeneratorAnalysis(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, ViabilityKernelInfo& VKObj, std::vector<double> & PIPObj, double & FailureMetric, const double & Margin, const double & dt)
+std::vector<PIPInfo> PIPGeneratorAnalysis(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<double> & ActDists, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, ViabilityKernelInfo& VKObj, std::vector<double> & PIPObj, double & FailureMetric, const double & Margin, const double & dt)
 {
   int FailureFlag;
-  std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContacts, ActVelocities, ActStatus, COMPosCur, COMVel, FailureFlag);
+  std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContacts, ActVelocities, ActDists, ActStatus, COMPosCur, COMVel, FailureFlag);
   PIPObj.reserve(PIPTotal.size());
   for (int i = 0; i < PIPTotal.size(); i++)
   {
@@ -790,46 +815,10 @@ std::vector<PIPInfo> PIPGeneratorAnalysis(const std::vector<Vector3> & ActContac
   return PIPTotal;
 }
 
-std::vector<PIPInfo> PIPGeneratorSP(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, ViabilityKernelInfo & VKObj, double & FailureMetric, const double & dt)
+std::vector<PIPInfo> PIPGenerator(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<double> & ActDists,const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, const std::vector<const char*> & EdgeFileNames, ViabilityKernelInfo& VKObj, double & FailureMetric, const double & dt)
 {
   int FailureFlag;
-  std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContacts, ActVelocities, ActStatus, COMPosCur, COMVel, FailureFlag);
-  std::vector<double> PIPObj;
-  PIPObj.reserve(PIPTotal.size());
-  for (int i = 0; i < PIPTotal.size(); i++)
-  {
-    double PIPObj_i = 0.0;
-    PIPObj_i = VKObj.ObjectiveRetrieve(PIPTotal[i], COMPosCur);
-    PIPObj.push_back(PIPObj_i);
-  }
-  double PIPObjective = *min_element(PIPObj.begin(), PIPObj.end());
-  if(PIPObjective<0)
-  {
-    FailureMetric = 1.0;
-  }
-  else
-  {
-    FailureMetric = 0.0;
-  }
-  switch (FailureFlag)
-  {
-    case 1:
-    {
-      FailureMetric = 1.0;
-    }
-    break;
-    default:
-    {
-    }
-    break;
-  }
-  return PIPTotal;
-}
-
-std::vector<PIPInfo> PIPGenerator(const std::vector<Vector3> & ActContacts, const std::vector<Vector3> & ActVelocities, const std::vector<int> & ActStatus, Vector3 & COMPosCur, Vector3 & COMVel, const std::vector<const char*> & EdgeFileNames, ViabilityKernelInfo& VKObj, double & FailureMetric, const double & dt)
-{
-  int FailureFlag;
-  std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContacts, ActVelocities, ActStatus, COMPosCur, COMVel, FailureFlag);
+  std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContacts, ActVelocities, ActDists, ActStatus, COMPosCur, COMVel, FailureFlag);
   std::ofstream fEdgeA;         fEdgeA.open(EdgeFileNames[0], std::ios_base::app);
   std::ofstream fEdgeB;         fEdgeB.open(EdgeFileNames[1], std::ios_base::app);
   std::ofstream fEdgeCOM;       fEdgeCOM.open(EdgeFileNames[2], std::ios_base::app);

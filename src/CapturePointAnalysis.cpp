@@ -106,11 +106,28 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
   // This function takes in the given trajectory of q and qdot and output for each method.
   double dt = 0.025;        // This should be set in advance according to simulation.
 
-  std::vector<double> PVKCPTraj(qTraj.size());
-  std::vector<double> CPTraj(qTraj.size());
+  int EdgeNumber = 4;
+  double mu = 1.0;
 
-  std::vector<double> COMx(qTraj.size()),             COMy(qTraj.size()),             COMz(qTraj.size());
-  std::vector<double> COMVelx(qTraj.size()),          COMVely(qTraj.size()),          COMVelz(qTraj.size());
+  // Seven objective trajectories
+  const int StepNo = qTraj.size();
+  std::vector<double> PVKRBTraj(StepNo),        PVKCPTraj(StepNo),        PVKHJBTraj(StepNo);
+  std::vector<double> ZSCTraj(StepNo),          OETraj(StepNo),           CPTraj(StepNo),           ZMPTraj(StepNo);
+
+  // Centroidal Informatioin only contains robot's centroidal position and velocity.
+  std::vector<double> COMx(StepNo),             COMy(StepNo),             COMz(StepNo);
+  std::vector<double> COMVelx(StepNo),          COMVely(StepNo),          COMVelz(StepNo);
+
+  std::vector<const char*> EdgeFileNames;
+  string fEdgeAFile = "EdgeATraj" + std::to_string(FileIndex) + ".txt";                 const char *fEdgeAFile_Name = fEdgeAFile.c_str();
+  string fEdgeBFile = "EdgeBTraj" + std::to_string(FileIndex) + ".txt";                 const char *fEdgeBFile_Name = fEdgeBFile.c_str();
+  string fEdgeCOMFile = "EdgeCOMTraj" + std::to_string(FileIndex) + ".txt";             const char *fEdgeCOMFile_Name = fEdgeCOMFile.c_str();
+  string fEdgexTrajFile = "EdgexTraj" + std::to_string(FileIndex) + ".txt";             const char *fEdgexTrajFile_Name = fEdgexTrajFile.c_str();
+  string fEdgeyTrajFile = "EdgeyTraj" + std::to_string(FileIndex) + ".txt";             const char *fEdgeyTrajFile_Name = fEdgeyTrajFile.c_str();
+  string fEdgezTrajFile = "EdgezTraj" + std::to_string(FileIndex) + ".txt";             const char *fEdgezTrajFile_Name = fEdgezTrajFile.c_str();
+
+  EdgeFileNames.push_back(fEdgeAFile_Name);         EdgeFileNames.push_back(fEdgeBFile_Name);         EdgeFileNames.push_back(fEdgeCOMFile_Name);
+  EdgeFileNames.push_back(fEdgexTrajFile_Name);     EdgeFileNames.push_back(fEdgeyTrajFile_Name);     EdgeFileNames.push_back(fEdgezTrajFile_Name);
 
   int StepIndex = 0;
   for (int i = 0; i < qTraj.size(); i++)        // For the sake of Centroidal Acceleration for ZMP
@@ -120,27 +137,41 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
     SimRobot.UpdateConfig(qNow);
     SimRobot.dq = qdotNow;
 
-    Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0);
+    /* Robot's COMPos and COMVel */
+    Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0), COMAcc(0.0, 0.0, 0.0);
     CentroidalState(SimRobot, COMPos, COMVel);
-
     COMx[StepIndex] = COMPos.x;             COMy[StepIndex] = COMPos.y;               COMz[StepIndex] = COMPos.z;
     COMVelx[StepIndex] = COMVel.x;          COMVely[StepIndex] = COMVel.y;            COMVelz[StepIndex] = COMVel.z;
 
     std::vector<Vector3>  ActContactPositions, ActVelocities;        // A vector of Vector3 points
     std::vector<Matrix>   ActJacobians;       // A vector of Jacobian matrices
-    std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActJacobians, SDFInfo);
+    std::vector<double>   ActDists;
+    std::vector<int> ActStatus = ActContactNJacobian(SimRobot, RobotLinkInfo, RobotContactInfo, ActContactPositions, ActVelocities, ActDists, ActJacobians, SDFInfo);
+
+    std::vector<Vector3> ConeShiftedUnits, ConeUnits;
+    ConeUnitGenerator(ActContactPositions, SDFInfo, ConeShiftedUnits, ConeUnits, EdgeNumber, mu);
 
     /* 3. Failure Metric using PVK-HJB assumption*/
-    int FailureFlag;
-    std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, FailureFlag);
+    double HJBObjective;
+    std::vector<PIPInfo> PIPTotal = PIPGenerator(ActContactPositions, ActVelocities, ActDists, ActStatus, COMPos, COMVel, EdgeFileNames, VKObj, HJBObjective, dt);
+    PVKHJBTraj[StepIndex] = HJBObjective;
+
+    /* 1. Failure Metric using PVK-RB assumption*/
+    double RBObjective = RBGenerator(PIPTotal);
+    PVKRBTraj[StepIndex] = RBObjective;
+
     /* 2. Failure Metric using PVK-CP assumption*/
     double CPCEObjective = CPCEGenerator(PIPTotal);
-    std::printf("PVK-CP: %f\n", CPCEObjective);
     PVKCPTraj[StepIndex] = CPCEObjective;
 
+    /* 4. Zero-Step-Capturability with Convex Optimization */
+    double ZSCObjective = ZeroStepCapturabilityGenerator(ActContactPositions, ConeShiftedUnits, EdgeNumber, COMPos, COMVel);
+    ZSCTraj[StepIndex] = ZSCObjective;
+
     // Projection to ground
-    std::vector<Vector3> ProjActContactPositions;
+    std::vector<Vector3> ProjActContactPositions, ZeroContactVelocities;
     ProjActContactPositions.reserve(ActContactPositions.size());
+    ZeroContactVelocities.reserve(ActVelocities.size());
     double LowestHeight = 100.0;
     for (int j = 0; j < ActContactPositions.size(); j++)
     {
@@ -154,32 +185,67 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
     {
       Vector3 ProjActContact(ActContactPositions[j].x, ActContactPositions[j].y, LowestHeight);
       ProjActContactPositions.push_back(ProjActContact);
+
+      Vector3 ZeroContactVelocity(0.0, 0.0, 0.0);
+      ZeroContactVelocities.push_back(ZeroContactVelocity);
     }
 
     std::vector<double> PIPObj;
     double PVKHJBMargin = 0.0;
     double HJBSPObjective = 0.0;
-    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ActVelocities, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
+    std::vector<PIPInfo> PIPSPTotal = PIPGeneratorAnalysis(ProjActContactPositions, ZeroContactVelocities, ActDists, ActStatus, COMPos, COMVel, VKObj, PIPObj, HJBSPObjective, PVKHJBMargin, dt);
+
+    // Orbital Energy which is a 2D version of PVK-RB
+    double OEMargin = 0.0;
+    double OEObjective = RBGeneratorAnalysis(PIPSPTotal, OEMargin);
+    OETraj[StepIndex] = OEObjective;
 
     // Capture Point which is a 2D versino of PVK-CP
     double CPMargin = 0.0;
     double CPObjective = CPCEGeneratorAnalysis(PIPSPTotal, CPMargin);
     CPTraj[StepIndex] = CPObjective;
-    std::printf("CP: %f\n", CPObjective);
+
+    switch (StepIndex)
+    {
+      case 0:
+      {
+
+      }
+      break;
+      default:
+      {
+        COMAcc.x = (COMVelx[StepIndex] - COMVelx[StepIndex-1])/dt;
+        COMAcc.y = (COMVely[StepIndex] - COMVely[StepIndex-1])/dt;
+        COMAcc.z = (COMVelz[StepIndex] - COMVelz[StepIndex-1])/dt;
+      }
+      break;
+    }
+
+    // ZMP
+    double ZMPMargin = 0.0;
+    double ZMPObjective = ZMPGeneratorAnalysis(PIPSPTotal, COMPos, COMAcc, ZMPMargin);
+    ZMPTraj[StepIndex] = ZMPObjective;
 
     StepIndex = StepIndex + 1;
   }
 
-  // // Here the job is to write down the centroidal trajectories.
-  // ObjTrajWriter(COMx, FileIndex, "COMx");
-  // ObjTrajWriter(COMy, FileIndex, "COMy");
-  // ObjTrajWriter(COMz, FileIndex, "COMz");
-  // ObjTrajWriter(COMVelx, FileIndex, "COMVelx");
-  // ObjTrajWriter(COMVely, FileIndex, "COMVely");
-  // ObjTrajWriter(COMVelz, FileIndex, "COMVelz");
+  // Here the job is to write down the centroidal trajectories.
+  ObjTrajWriter(COMx, FileIndex, "COMx");
+  ObjTrajWriter(COMy, FileIndex, "COMy");
+  ObjTrajWriter(COMz, FileIndex, "COMz");
+  ObjTrajWriter(COMVelx, FileIndex, "COMVelx");
+  ObjTrajWriter(COMVely, FileIndex, "COMVely");
+  ObjTrajWriter(COMVelz, FileIndex, "COMVelz");
 
-  // ObjTrajWriter(PVKCPTraj, FileIndex, "PVKCP");
-  // ObjTrajWriter(CPTraj, FileIndex, "CP");
+  ObjTrajWriter(PVKRBTraj, FileIndex, "PVKRB");
+  ObjTrajWriter(PVKCPTraj, FileIndex, "PVKCP");
+  ObjTrajWriter(PVKHJBTraj, FileIndex, "PVKHJB");
+
+  ObjTrajWriter(ZSCTraj, FileIndex, "ZSC");
+
+  ObjTrajWriter(OETraj, FileIndex, "OE");
+  ObjTrajWriter(CPTraj, FileIndex, "CP");
+  ObjTrajWriter(ZMPTraj, FileIndex, "ZMP");
 
   return;
 }
@@ -187,11 +253,10 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
 void CapturePointAnalysis(Robot & SimRobot, ViabilityKernelInfo & VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo)
 {
   // This function is use to generate data analysis for experimentation trajectories.
-  string UserPath = "/home/motion/Desktop/Data/Case 1/";
-  for (int i = 0; i < 250; i++)
+  string UserPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/Case 6/";
+  for (int i = 289; i < 351; i++)
   {
     int FileIndex = i + 1;
-    FileIndex = 140;
     std::vector<Config> qTraj, qdotTraj;
     qTrajNqdotTrajLoader(UserPath, FileIndex, qTraj, qdotTraj);
     CPEvaluation(FileIndex, SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo, qTraj, qdotTraj);
