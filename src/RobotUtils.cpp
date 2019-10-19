@@ -361,7 +361,7 @@ int FileIndexFinder()
     }
     FileIndexReader.close();
   }
-  else cout << "Unable to open FileIndex file";
+  else std::cerr << "Unable to open FileIndex file";
 
   // The second step is to update the next element value to be +1
   const char *FileIndexWriter_Name = FileIndexName.c_str();

@@ -13,11 +13,11 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  string XMLFileStr = FolderPath + "/Envi0.xml";
+  string XMLFileStr = FolderPath + "/Sample.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
-    std::cerr<<"World XML file path does not exist!"<<endl;
+    std::cerr<<"Sample XML file path does not exist!"<<endl;
     return true;
   }
 
@@ -31,93 +31,26 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   const std::string ContactStatusPath = UserFilePath + "InitContact.txt";
   std::vector<ContactStatusInfo> RobotContactInfo = ContactStatusInfoLoader(ContactStatusPath);
 
-  /* 3. Signed Distance Field Computation */
-  const int GridsNo = 251;
-  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, GridsNo);
-  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldLoader(GridsNo);
-
-  std::vector<Config>  qTraj;
-  std::vector<double> COMVelx, COMVely, COMVelz;
+  /* 3. Generation of robot's configuration and World XML file */
   Robot SimRobot = *world.robots[0];
-
-  // // Post-data process for Capture Point
-  // CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
-  // system("pause");
-
-  /* 4. Robot State Loader */
-  RobotConfigLoader(SimRobot, UserFilePath, "Test.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTest.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "DefaultTester.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "FrameOpt.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Frame3.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Frame2_75.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp0.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp0_Load.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp1.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp1_Load.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp2.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp2_Load.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp3.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp3_Load.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp4.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Exp4_Load.config");
-  // RobotConfigLoader(SimRobot, UserFilePath, "Case6.config");
-
-  std::vector<double> KeyConfig(SimRobot.q.size());
-
   std::vector<double> InitRobotConfig(SimRobot.q.size()), InitRobotVelocity(SimRobot.q.size()), ZeroRobotVelocity(SimRobot.q.size());
-  std::vector<double> RobotConfigRef(SimRobot.q.size());
-  for (int i = 0; i < SimRobot.q.size(); i++)
-  {
-    double scale = 3.0;
-    InitRobotVelocity[i] = RandomValue(scale);
-    RobotConfigRef[i] =   SimRobot.q[i];
-    InitRobotConfig[i] =  SimRobot.q[i];
-  }
-  SimRobot.dq = InitRobotVelocity;
-
-  Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0), COMAcc(0.0, 0.0, 0.0);
-  CentroidalState(SimRobot, COMPos, COMVel);
-
-  // std::vector<double> KeyConfig5 = KeyFrameMirror(SimRobot.q);
-  // RobotConfigWriter(KeyConfig5, UserFilePath, "KeyConfig5.config");
-
-
-  // bool KeyOptFlag = KeyFrameOptimization(SimRobot, RobotLinkInfo, RobotContactInfo, SDFInfo, RobotConfigRef, KeyConfig);
-  // RobotConfigWriter(KeyConfig, UserFilePath, "Frame4.config");
-
-    /* 6. Initial State Optimization */
-  bool ConfigOptFlag = false;
-  bool VelocityOptFlag = false;
-  bool InitFlag = InitialStateOptFn(SimRobot, RobotLinkInfo, RobotContactInfo, SDFInfo, RobotConfigRef, KEInit, CentDirection, InitRobotConfig, InitRobotVelocity, ConfigOptFlag, VelocityOptFlag);
-  switch (InitFlag)
-  {
-    case false:
-    {
-      return false;
-    }
-    break;
-    default:
-    {
-      printf("Initial Optimization Finished! \n");
-    }
-    break;
-  }
+  SignedDistanceFieldInfo SDFInfo = InitEnviGenerator(SimRobot, RobotLinkInfo, RobotContactInfo, UserFilePath, InitRobotConfig);
   RobotConfigWriter(InitRobotConfig, UserFilePath, "InitConfig.config");
 
-  RobotLink3D Link_i = SimRobot.links[17];
-
-  Vector3 Link_i_EulerAngles = RotMat2EulerAngles(Link_i.T_World.R);
-
-  int coLFlag = 0;
-  std::vector<double> SPInitConfig = InitEnviGenerator(SimRobot, RobotLinkInfo, RobotContactInfo, UserFilePath, coLFlag);
-
+  bool InitVeloFlag = false;
+  while (InitVeloFlag==false)
+  {
+    for (int i = 0; i < SimRobot.q.size(); i++)
+    {
+      double scale = 3.0;
+      InitRobotVelocity[i] = RandomValue(scale);
+    }
+    SimRobot.dq = InitRobotVelocity;
+    InitVeloFlag = InitialVelocityGene(SimRobot, RobotLinkInfo, RobotContactInfo, KEInit, InitRobotVelocity);
+  }
   SimRobot.UpdateConfig(Config(InitRobotConfig));
   SimRobot.dq = InitRobotVelocity;
   std::cout<<SimRobot.GetKineticEnergy()<<" J"<<std::endl;
-
-  // std::vector<double> RobotConfig, RobotVelocity;
-  // RobotStateLoader(UserFilePath, "TestConfig.config", "TestVelocity.config", RobotConfig, RobotVelocity);
 
   //  Given the optimized result to be the initial state
   Config InitRobotConfigNew(InitRobotConfig);

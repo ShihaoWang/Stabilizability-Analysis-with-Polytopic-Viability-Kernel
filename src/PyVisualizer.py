@@ -907,5 +907,5 @@ def main(*arg):
 
 if __name__ == "__main__":
     # main("Cover1", 0)
-    # main("InitConfig", 0)
-    main("1.path", 2)
+    main("InitConfig", 2)
+    # main("1.path", 2)

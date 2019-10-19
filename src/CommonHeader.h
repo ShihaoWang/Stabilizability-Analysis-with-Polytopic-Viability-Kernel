@@ -31,10 +31,11 @@ void IntersectionsWriter(const std::vector<Vector3> & Intersections, const strin
 bool InitialStateOptFn(Robot& _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const SignedDistanceFieldInfo& _SDFInfo, const std::vector<double>& _RobotConfigRef, const double & _KEInit, const Vector3& _CentDirection, std::vector<double> & RobotConfig, std::vector<double> & RobotVelocity, const bool & ConfigFlag, const bool & VelocityFlag);
 bool KeyFrameOptimization(Robot& _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const SignedDistanceFieldInfo& _SDFInfo, const std::vector<double>& _RobotConfigRef, std::vector<double> & RobotConfig);
 std::vector<double> KeyFrameMirror(const std::vector<double> &RobotConfig);
-std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const string & UserFilePath, int & coLFlag);
+SignedDistanceFieldInfo InitEnviGenerator(Robot & _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const string & UserFilePath, std::vector<double> & InitRobotConfig);
 void RobotAxesWriter(const std::vector<double> & Axes, const std::vector<int> & LinkIndices, const string &UserPath);
 void AvgContactWriter(const std::vector<Vector3> & AvgContacts, const string & UserPath);
 void YawAngleWriter(const std::vector<double> & YawAngles, const string &UserPath);
+bool InitialVelocityGene(Robot& _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const double & _KEInit, std::vector<double> & RobotVelocityGuess);
 
 /* 4. Robot Utility Functions */
 void SimRobotToRobotState(const Robot &_SimRobot, std::vector<double>& _Config, std::vector<double>& _Velocity);

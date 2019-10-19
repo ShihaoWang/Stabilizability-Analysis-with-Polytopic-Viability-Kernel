@@ -313,8 +313,10 @@ static void CoMSPOpt(std::vector<double> & RobotConfig)
   return;
 }
 
-std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const string & UserFilePath, int & coLFlag)
+SignedDistanceFieldInfo InitEnviGenerator(Robot & _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const string & UserFilePath, std::vector<double> & InitRobotConfig)
 {
+  // The outputs of this function are a robot configuration vector and a world xml file.
+
   SimRobotObj = _SimRobotObj;
   RobotLinkInfo = _RobotLinkInfo;
   RobotContactInfo = _RobotContactInfo;
@@ -330,7 +332,6 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
       bool CollisionFlag = true;
       while(CollisionFlag == true)
       {
-        coLFlag = 0;
         InitConfig = ConfigSampler();
         CoMSPOpt(InitConfig);
         Config RobotConfigNew(InitConfig);
@@ -452,7 +453,7 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
     // We need to simulate this robot for awhile to make sure it can be stabilized at its current configuration.
     double t_imp = 1.0;
     // Here first we would like to run the simulation for a certain amount of time to ensure the contact is well established.
-    double  dt = 0.1;
+    double dt = 0.1;
 
     Vector3 COMPosInit(0.0, 0.0, 0.0), COMVelInit(0.0, 0.0, 0.0);
     CentroidalState(*Sim.world->robots[0], COMPosInit, COMVelInit);
@@ -468,7 +469,7 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
     double DiffVio_z = COMPosFinal.z - COMPosInit.z;
 
     double DiffVio = sqrt(DiffVio_x * DiffVio_x + DiffVio_y * DiffVio_y + DiffVio_z * DiffVio_z);
-    if(DiffVio<0.01)
+    if(DiffVio<0.025)
     {
       SimuPassFlag = 1;
     }
@@ -477,6 +478,34 @@ std::vector<double> InitEnviGenerator(Robot & _SimRobotObj, const std::vector<Li
       SimuPassFlag = 0;
     }
   }
+  InitRobotConfig = InitConfig;
 
-  return InitConfig;
+  // SDF computation here
+  RobotWorld WorldObj;
+  SimGUIBackend Backend(&WorldObj);
+  WorldSimulation& Sim = Backend.sim;
+
+  string FileIndexName = "FileIndex.txt";         // This file should be located in the "build" folder.
+  ifstream FileIndexReader(FileIndexName);
+  int FileIndex;
+  string str_line;
+  if (FileIndexReader.is_open())
+  {
+    while (getline (FileIndexReader,str_line) )
+    {
+      FileIndex = stoi(str_line);
+    }
+    FileIndexReader.close();
+  }
+  else std::cerr << "Unable to open FileIndex file";
+  string XMLFileStr = "./Envi" + std::to_string(FileIndex) + ".xml";
+  const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
+  if(!Backend.LoadAndInitSim(XMLFile))
+  {
+    std::cerr<<"Sample XML file path does not exist!"<<endl;
+  }
+  // To faciliate robot's following computation, SDF can be computed here.
+  const int GridsNo = 251;
+  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(WorldObj, GridsNo);
+  return SDFInfo;
 }

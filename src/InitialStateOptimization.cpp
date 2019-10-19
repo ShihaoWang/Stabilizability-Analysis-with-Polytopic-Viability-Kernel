@@ -500,3 +500,223 @@ bool InitialStateOptFn(Robot& _SimRobotObj, const std::vector<LinkInfo> & _Robot
   }
   return true;
 }
+
+struct InitVeloOpt: public NonlinearOptimizerInfo
+{
+  // This is the class struct for the optimizaiton of configuraiton variables
+
+  InitVeloOpt():NonlinearOptimizerInfo(){};
+
+  // This struct inherits the NonlinearOptimizerInfo struct and we just need to defined the Constraint function
+  static void ObjNConstraint(int    *Status, int *n,    double x[],
+    int    *needF,  int *neF,  double F[],
+    int    *needG,  int *neG,  double G[],
+    char      *cu,  int *lencu,
+    int    iu[],    int *leniu,
+    double ru[],    int *lenru)
+    {
+      std::vector<double> x_vec(*n);
+      for (int i = 0; i < *n; i++)
+      {
+        x_vec[i] = x[i];
+      }
+      std::vector<double> F_val = InitVeloObjNCons(*n, *neF, x_vec);
+      for (int i = 0; i < *neF; i++)
+      {
+        F[i] = F_val[i];
+      }
+    }
+  void Solve(std::vector<double> &RobotVelocity)
+  {
+    int StartType = 0;
+    NonlinearProb.solve(StartType, neF, n, ObjAdd, ObjRow, ObjNConstraint,
+      xlow, xupp, Flow, Fupp,
+      x, xstate, xmul, F, Fstate, Fmul,
+      nS, nInf, sumInf);
+      for (int i = 0; i < n; i++)
+      {
+        RobotVelocity[i] = x[i];
+      }
+      delete []x;      delete []xlow;   delete []xupp;
+      delete []xmul;   delete []xstate;
+
+      delete []F;      delete []Flow;   delete []Fupp;
+      delete []Fmul;   delete []Fstate;
+  }
+
+  static std::vector<double> InitVeloObjNCons(const int& nVar, const int& nObjNCons, const std::vector<double>& VariableOpt)
+  {
+    // This funciton provides the constraint for the configuration variable
+    std::vector<double> F(nObjNCons);
+
+    std::vector<double> VelocityOpt(SimRobotObj.dq.size());
+    double Scale = VariableOpt[SimRobotObj.dq.size()];
+    F[0] = 0.0;
+    for (int i = 0; i < SimRobotObj.dq.size(); i++)
+    {
+      VelocityOpt[i] = VariableOpt[i];
+      F[0]+= VelocityOpt[i] * VelocityOpt[i];
+    }
+    SimRobotObj.dq = VelocityOpt;
+    // Make sure that active end effectors have zero relative signed distance.
+    int ConstraintIndex = 1;
+    // According to the RobotContactInfo, certain contacts are not active
+    for (int i = 0; i < RobotLinkInfo.size(); i++)
+    {
+      for (int j = 0; j < RobotLinkInfo[i].LocalContacts.size(); j++)
+      {
+        Vector3 LinkiPjVel;
+        SimRobotObj.GetWorldVelocity(RobotLinkInfo[i].LocalContacts[j], RobotLinkInfo[i].LinkIndex, SimRobotObj.dq, LinkiPjVel);
+        F[ConstraintIndex] = LinkiPjVel.x;       ConstraintIndex = ConstraintIndex + 1;
+        F[ConstraintIndex] = LinkiPjVel.y;       ConstraintIndex = ConstraintIndex + 1;
+        F[ConstraintIndex] = LinkiPjVel.z;       ConstraintIndex = ConstraintIndex + 1;
+      }
+    }
+    double Kinetic_Energy = SimRobotObj.GetKineticEnergy();
+    F[ConstraintIndex] = Kinetic_Energy - KEInit;
+    ConstraintIndex = ConstraintIndex + 1;
+    return F;
+  }
+};
+
+bool InitialVelocityGene(Robot& _SimRobotObj, const std::vector<LinkInfo> & _RobotLinkInfo, const std::vector<ContactStatusInfo> &  _RobotContactInfo, const double & _KEInit, std::vector<double> & RobotVelocityGuess)
+{
+  // This function is used to generate robot's initial velocity such that
+  SimRobotObj = _SimRobotObj;
+  RobotLinkInfo = _RobotLinkInfo;
+  RobotContactInfo = _RobotContactInfo;
+  KEInit = _KEInit;
+
+  InitVeloOpt InitVeloOptProblem;
+  int n = SimRobotObj.dq.size();                                            // DOF + slack variable
+  int neF = 1;                                                                  // Cost function sum on the robot's velocity square
+  for (int i = 0; i < RobotContactInfo.size(); i++)
+  {
+    for (int j = 0; j < RobotContactInfo[i].LocalContactStatus.size(); j++)     // Each contact has a velocity constraint.
+    {
+      neF = neF + 3;
+    }
+  }
+  neF = neF + 1;                                                                // Robot's Kinetic Energy
+  InitVeloOptProblem.InnerVariableInitialize(n, neF);
+
+  /*
+    Initialize the bounds of variables
+  */
+  std::vector<double> xlow_vec(n), xupp_vec(n);
+
+  for (int i = 0; i < 6; i++)
+  {
+    // Bounds on the global variables
+    xlow_vec[i] = -1000.0;
+    xupp_vec[i] =  1000.0;
+  }
+  for (int i = 6; i < n; i++)
+  {
+    xlow_vec[i] = SimRobotObj.velMin(i);
+    xupp_vec[i] = SimRobotObj.velMax(i);
+  }
+  InitVeloOptProblem.VariableBoundsUpdate(xlow_vec, xupp_vec);
+
+  /*
+    Initialize the bounds of variables
+  */
+  std::vector<double> Flow_vec(neF), Fupp_vec(neF);
+  std::vector<double> ConsCoeff;
+  Flow_vec[0] = 0;
+  Fupp_vec[0] = 1e20;           // The default idea is that the objective should always be nonnegative
+  int ConstraintIndex = 1;
+  for (int i = 0; i < RobotContactInfo.size(); i++)
+  {
+    for (int j = 0; j < RobotContactInfo[i].LocalContactStatus.size(); j++)
+    {
+      // Distance Constraint: scalar
+      switch (RobotContactInfo[i].LocalContactStatus[j])
+      {
+        case 1:     // This means that the certain constraint is active
+        Flow_vec[ConstraintIndex] = 0;
+        Fupp_vec[ConstraintIndex] = 0;
+        ConstraintIndex = ConstraintIndex + 1;
+        Flow_vec[ConstraintIndex] = 0;
+        Fupp_vec[ConstraintIndex] = 0;
+        ConstraintIndex = ConstraintIndex + 1;
+        Flow_vec[ConstraintIndex] = 0;
+        Fupp_vec[ConstraintIndex] = 0;
+        ConstraintIndex = ConstraintIndex + 1;
+
+        ConsCoeff.push_back(1);
+        ConsCoeff.push_back(1);
+        ConsCoeff.push_back(1);
+
+        break;
+        case 0:
+        Flow_vec[ConstraintIndex] = -1e20;
+        Fupp_vec[ConstraintIndex] = 1e20;         // This is due to the nonpenetraition consideration.
+        ConstraintIndex = ConstraintIndex + 1;
+        Flow_vec[ConstraintIndex] = -1e20;
+        Fupp_vec[ConstraintIndex] = 1e20;         // This is due to the nonpenetraition consideration.
+        ConstraintIndex = ConstraintIndex + 1;
+        Flow_vec[ConstraintIndex] = -1e20;
+        Fupp_vec[ConstraintIndex] = 1e20;         // This is due to the nonpenetraition consideration.
+        ConstraintIndex = ConstraintIndex + 1;
+
+        ConsCoeff.push_back(0);
+        ConsCoeff.push_back(0);
+        ConsCoeff.push_back(0);
+        break;
+      }
+    }
+  }
+  Flow_vec[ConstraintIndex] = 0.0;
+  Fupp_vec[ConstraintIndex] = 0.0;                // Robot's Kinetic Energy
+  ConstraintIndex = ConstraintIndex + 1;
+  ConsCoeff.push_back(1);
+  InitVeloOptProblem.ConstraintBoundsUpdate(Flow_vec, Fupp_vec);
+  /*
+    Initialize the seed guess
+  */
+  std::vector<double> GuessVec(n);
+  for (int i = 0; i < n; i++)
+  {
+    GuessVec[i] = RobotVelocityGuess[i];
+  }
+  InitVeloOptProblem.SeedGuessUpdate(GuessVec);
+
+  /*
+    Given a name of this problem for the output
+  */
+  InitVeloOptProblem.ProblemNameUpdate("InitVeloOptProblem", 0);
+
+  InitVeloOptProblem.NonlinearProb.setIntParameter("Iterations limit", 1000000);
+  InitVeloOptProblem.NonlinearProb.setIntParameter("Major iterations limit", 500);
+  InitVeloOptProblem.NonlinearProb.setIntParameter("Major print level", 0);
+  InitVeloOptProblem.NonlinearProb.setIntParameter("Minor print level", 0);
+  /*
+    ProblemOptions seting
+  */
+  // Solve with Finite-Difference
+  InitVeloOptProblem.ProblemOptionsUpdate(0, 3);
+  InitVeloOptProblem.Solve(RobotVelocityGuess);
+
+  // The last step is the constraint validation.
+  std::vector<double> VariableOpt(n);
+  for (int i = 0; i < n; i++)
+  {
+    VariableOpt[i] = RobotVelocityGuess[i];
+  }
+  std::vector<double> ObjNConstraintVal = InitVeloOptProblem.InitVeloObjNCons(n, neF, VariableOpt);
+
+  bool FeasibleFlag = true;
+
+  for (int i = 0; i < ConsCoeff.size(); i++)
+  {
+    double ConsVal = ObjNConstraintVal[i+1] * ConsCoeff[i];
+    ConsVal = ConsVal * ConsVal;
+    if (ConsVal>eps)
+    {
+      FeasibleFlag = false;
+      return FeasibleFlag;
+    }
+  }
+  return FeasibleFlag;
+}
