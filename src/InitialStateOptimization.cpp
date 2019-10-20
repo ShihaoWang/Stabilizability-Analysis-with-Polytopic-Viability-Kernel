@@ -10,6 +10,7 @@ static std::vector<double> RobotConfigRef;
 static double KEInit;
 static Vector3 CentDirection;
 static double eps = 1e-8;
+static double CentMag;
 
 struct InitialConfigOpt: public NonlinearOptimizerInfo
 {
@@ -559,7 +560,8 @@ struct InitVeloOpt: public NonlinearOptimizerInfo
     SimRobotObj.dq = VelocityOpt;
     Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0);
     CentroidalState(SimRobotObj, COMPos, COMVel);
-    F[0] = COMVel.x * COMVel.x + COMVel.y * COMVel.y + COMVel.z * COMVel.z;
+    double CentVio = COMVel.x * COMVel.x + COMVel.y * COMVel.y + COMVel.z * COMVel.z - CentMag;
+    F[0] = CentVio * CentVio;
 
     // Make sure that active end effectors have zero relative signed distance.
     int ConstraintIndex = 1;
@@ -589,6 +591,18 @@ bool InitialVelocityGene(Robot& _SimRobotObj, const std::vector<LinkInfo> & _Rob
   RobotLinkInfo = _RobotLinkInfo;
   RobotContactInfo = _RobotContactInfo;
   KEInit = _KEInit;
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  double Mag = 0.2;
+  std::uniform_real_distribution<> KEDis(0.0, Mag);
+  CentMag = KEDis(gen);
+
+  double xLimit, yLimit, zLimit;
+  // Case 6
+  xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
+  std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
+
 
   InitVeloOpt InitVeloOptProblem;
   int n = SimRobotObj.dq.size();                                            // DOF + slack variable

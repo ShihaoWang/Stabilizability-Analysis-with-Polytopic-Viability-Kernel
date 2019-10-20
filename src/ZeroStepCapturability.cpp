@@ -933,7 +933,15 @@ static bool ZSCInner(const std::vector<Vector3> & ActContactPositions, const std
 double ZeroStepCapturabilityGenerator(const std::vector<Vector3> & ActContactPositions, const std::vector<Vector3> & ConeUnit, const int & EdgeNo, const Vector3& COMPos, const Vector3& COMVel)
 {
   // This function is used to generate the solution for zero capturability failure metric.
-  bool StabilizedFlag = ZSCInner(ActContactPositions, ConeUnit, EdgeNo, COMPos, COMVel);
+  bool StabilizedFlag;
+  try
+  {
+    StabilizedFlag = ZSCInner(ActContactPositions, ConeUnit, EdgeNo, COMPos, COMVel);
+  }
+  catch(...)
+  {
+    StabilizedFlag = false;
+  }
   double ZSCObj = 1.0;
   switch (StabilizedFlag)
   {

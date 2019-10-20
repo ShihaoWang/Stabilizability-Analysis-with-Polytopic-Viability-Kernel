@@ -127,7 +127,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
   // 2 contact
   double KELow = 0.0;
-  double KEUpp = 25.0;
+  double KEUpp = 50.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
@@ -165,6 +165,10 @@ int main()
       std::system(mv_command_str);
 
       mv_command = "mv -f Specs*.* ./Data";
+      mv_command_str = mv_command.c_str();
+      std::system(mv_command_str);
+
+      mv_command = "mv -f Envi*.* ./Envi";
       mv_command_str = mv_command.c_str();
       std::system(mv_command_str);
     }
