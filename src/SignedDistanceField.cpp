@@ -25,7 +25,7 @@ static void SignedDistanceFieldWriter(const std::vector<double> & SDFVector, con
 
 SignedDistanceFieldInfo SignedDistanceFieldGene(const RobotWorld& WorldObj, const int& GridsNo)
 {
-  double resolution = 0.1;
+  double resolution = 0.01;
 
   const int NumberOfTerrains = WorldObj.terrains.size();
 
@@ -51,14 +51,30 @@ SignedDistanceFieldInfo SignedDistanceFieldGene(const RobotWorld& WorldObj, cons
   // Now it is time to calculate SignedDistanceFieldInfo struct obj from SDFGrid
 
   // The estimated sizes of the environment
-  double Envi_x_min = SDFGrid.bb.bmin[0];
-  double Envi_x_max = SDFGrid.bb.bmax[0];
+  double BB_x_min = SDFGrid.bb.bmin[0];
+  double BB_x_max = SDFGrid.bb.bmax[0];
 
-  double Envi_y_min = SDFGrid.bb.bmin[1];
-  double Envi_y_max = SDFGrid.bb.bmax[1];
+  double BB_y_min = SDFGrid.bb.bmin[1];
+  double BB_y_max = SDFGrid.bb.bmax[1];
 
-  double Envi_z_min = SDFGrid.bb.bmin[2];
-  double Envi_z_max = SDFGrid.bb.bmax[2];
+  double BB_z_min = SDFGrid.bb.bmin[2];
+  double BB_z_max = SDFGrid.bb.bmax[2];
+
+  double BB_x_length = BB_x_max - BB_x_min;
+  double BB_y_length = BB_y_max - BB_y_min;
+  double BB_z_length = BB_z_max - BB_z_min;
+
+  double ExtCoeff = 0.0;
+
+  // The estimated sizes of the environment
+  double Envi_x_min = BB_x_min - ExtCoeff * BB_x_length;
+  double Envi_x_max = BB_x_max + ExtCoeff * BB_x_length;
+
+  double Envi_y_min = BB_y_min - ExtCoeff * BB_y_length;
+  double Envi_y_max = BB_y_max + ExtCoeff * BB_y_length;
+
+  double Envi_z_min = BB_z_min - ExtCoeff * BB_z_length;
+  double Envi_z_max = BB_z_max + ExtCoeff * BB_z_length;
 
   double Envi_x_length = Envi_x_max - Envi_x_min;
   double Envi_y_length = Envi_y_max - Envi_y_min;

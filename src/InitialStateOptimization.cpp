@@ -555,9 +555,12 @@ struct InitVeloOpt: public NonlinearOptimizerInfo
     for (int i = 0; i < SimRobotObj.dq.size(); i++)
     {
       VelocityOpt[i] = VariableOpt[i];
-      F[0]+= VelocityOpt[i] * VelocityOpt[i];
     }
     SimRobotObj.dq = VelocityOpt;
+    Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0);
+    CentroidalState(SimRobotObj, COMPos, COMVel);
+    F[0] = COMVel.x * COMVel.x + COMVel.y * COMVel.y + COMVel.z * COMVel.z;
+
     // Make sure that active end effectors have zero relative signed distance.
     int ConstraintIndex = 1;
     // According to the RobotContactInfo, certain contacts are not active

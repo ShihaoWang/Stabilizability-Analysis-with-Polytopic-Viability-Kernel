@@ -37,12 +37,16 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   SignedDistanceFieldInfo SDFInfo = InitEnviGenerator(SimRobot, RobotLinkInfo, RobotContactInfo, UserFilePath, InitRobotConfig);
   RobotConfigWriter(InitRobotConfig, UserFilePath, "InitConfig.config");
 
+  Config RobotConfigNew(InitRobotConfig);
+  SimRobot.UpdateConfig(RobotConfigNew);
+  SimRobot.UpdateGeometry();
+
   bool InitVeloFlag = false;
   while (InitVeloFlag==false)
   {
     for (int i = 0; i < SimRobot.q.size(); i++)
     {
-      double scale = 3.0;
+      double scale = 1.0;
       InitRobotVelocity[i] = RandomValue(scale);
     }
     SimRobot.dq = InitRobotVelocity;
@@ -123,7 +127,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
   // 2 contact
   double KELow = 0.0;
-  double KEUpp = 20.0;
+  double KEUpp = 25.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 

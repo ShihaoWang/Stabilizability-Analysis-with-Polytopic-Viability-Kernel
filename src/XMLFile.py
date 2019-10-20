@@ -120,7 +120,7 @@ def main():
     RobotHeader = "  <robot name=\"HRP2\" file=\"/home/motion/Klampt-examples/data/robots/hrp2.rob\" config=" + ConfigInfo
     TerrainHeader =""
     for i in range(0, len(CenterPoint)):
-        TerrainHeader+="\n  <terrain file=\"/home/motion/Klampt-examples/data/terrains/block.off\" scale=\"0.1 0.1 0.35\" translation=\""
+        TerrainHeader+="\n  <terrain file=\"/home/motion/Klampt-examples/data/terrains/block.off\" scale=\"0.1 0.1 1.0\" translation=\""
         TerrainHeader+= str(CenterPoint[i][0]) + " " + str(CenterPoint[i][1]) + " " + str(CenterPoint[i][2]) + "\""
         TerrainHeader+=" rotateX= \"" + str(RotX[i]) + " \" rotateY=\"" + str(RotY[i]) + "\">\n     <display color=\"0.4 0.3 0.2\"/>\n  </terrain>"
     SimulationHeasder = "\n  <simulation>\n    <globals adaptiveTimeStepping=\"1\" />"
