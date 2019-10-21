@@ -260,8 +260,8 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
 void CapturePointAnalysis(Robot & SimRobot, ViabilityKernelInfo & VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo)
 {
   // This function is use to generate data analysis for experimentation trajectories.
-  string UserPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/";
-  for (int i = 326; i < 351; i++)
+  string UserPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/Data/";
+  for (int i = 483; i < 666; i++)
   {
     int FileIndex = i + 1;
     std::vector<Config> qTraj, qdotTraj;

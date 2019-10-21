@@ -131,7 +131,7 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
 
   // 2 contact
   double KELow = 0.0;
-  double KEUpp = 50.0;
+  double KEUpp = 35.0;
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 

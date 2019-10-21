@@ -594,7 +594,7 @@ bool InitialVelocityGene(Robot& _SimRobotObj, const std::vector<LinkInfo> & _Rob
 
   std::random_device rd;
   std::mt19937 gen(rd());
-  double Mag = 0.2;
+  double Mag = 0.1;
   std::uniform_real_distribution<> KEDis(0.0, Mag);
   CentMag = KEDis(gen);
 

@@ -14,12 +14,8 @@ import numpy as np
 
 # This file contains functions related to
 
-# ExpName = "build/"
-ExpName = "build/"
-# ExpName = "build/ThreeContactVert"
-# ExpName = "build/HJBTwoContactFlat"
-# ExpName = "build/HJBFourContactFlat"
-
+ExpName = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/"
+# ExpName = "/home/motion/Desktop/1/"
 mode_no = 1;
 
 class MyGLPlugin(vis.GLPluginInterface):
@@ -134,14 +130,41 @@ def State_Loader_fn(*args):
             raise RuntimeError("Input name should be either one config file or two txt files!")
     return DOF, Config_Init, Velocity_Init
 
+def Traj_Loader(robot_traj_path):
+    with open(robot_traj_path,'r') as robot_traj_file:
+        robot_traj_tot = robot_traj_file.readlines()
+    return robot_traj_tot
+
 def Traj_Loader_fn(*args):
     # This function is used to read in the traj file for visualization
+    # However, this time we are going to load all the trajectories for visualization.
+    # PVKRB, PVKCP, PVKHJB, ZSC, OE, CP,ZMP
+
+    robot_traj_path = ""
+    PVKRB_traj_path = ""
+    PVKCP_traj_path = ""
+    PVKHJB_traj_path = ""
+    ZSC_traj_path = ""
+    OE_traj_path = ""
+    CP_traj_path = ""
+    ZMP_traj_path = ""
+
     if len(args)==1:
-        traj_path = "../" + ExpName + "/stateTraj" + args[0] + ".path"
+        robot_traj_path = ExpName + "Data/stateTraj" + args[0] + ".path"
+
+        PVKRB_traj_path = ExpName + "Data/PVKRBTraj" + args[0] + ".txt"
+        PVKCP_traj_path = ExpName + "Data/PVKCPTraj" + args[0] + ".txt"
+        PVKHJB_traj_path = ExpName + "Data/PVKHJBTraj" + args[0] + ".txt"
+        ZSC_traj_path = ExpName + "Data/ZSCTraj" + args[0] + ".txt"
+        OE_traj_path = ExpName + "Data/OETraj" + args[0] + ".txt"
+        CP_traj_path = ExpName + "Data/CPTraj" + args[0] + ".txt"
+        ZMP_traj_path = ExpName + "Data/ZMPTraj" + args[0] + ".txt"
+
     else:
         raise RuntimeError("Only one path file avaiable at one time!")
-    with open(traj_path,'r') as robot_traj_file:
-        robot_traj_tot = robot_traj_file.readlines()
+
+    # Load trajectories one by one
+    robot_traj_tot = Traj_Loader(robot_traj_path)
     robot_traj = []
     time_count = 0;
     for robot_traj_i in robot_traj_tot:
@@ -159,7 +182,16 @@ def Traj_Loader_fn(*args):
         robot_traj_i = robot_traj_i.split(" ")
         robot_traj_i = String_List_to_Number_List(robot_traj_i[0:DOF],"float")
         robot_traj.append(robot_traj_i)
-    return delta_t, DOF, robot_traj
+
+    PVKRB_traj = String_List_to_Number_List(Traj_Loader(PVKRB_traj_path),"float")
+    PVKCP_traj = String_List_to_Number_List(Traj_Loader(PVKCP_traj_path),"float")
+    PVKHJB_traj = String_List_to_Number_List(Traj_Loader(PVKHJB_traj_path),"float")
+    ZSC_traj = String_List_to_Number_List(Traj_Loader(ZSC_traj_path),"float")
+    OE_traj = String_List_to_Number_List(Traj_Loader(OE_traj_path),"float")
+    CP_traj = String_List_to_Number_List(Traj_Loader(CP_traj_path),"float")
+    ZMP_traj = String_List_to_Number_List(Traj_Loader(ZMP_traj_path),"float")
+
+    return delta_t, DOF, robot_traj, PVKRB_traj, PVKCP_traj, PVKHJB_traj, ZSC_traj, OE_traj, CP_traj, ZMP_traj
 
 def Contact_Link_Reader(File_Name, Path_Name):
     # This function is used to read-in the formation of the certain link and its associated contact points
@@ -247,7 +279,7 @@ def PIP_Traj_Reader(index):
     EdgeyList = []
     EdgezList = []
 
-    EdgeA_path = "../" + ExpName + "/EdgeATraj" + index + ".txt"
+    EdgeA_path = ExpName + "Data/EdgeATraj" + index + ".txt"
     with open(EdgeA_path,'r') as EdgeA_path_file:
         EdgeA_tot = EdgeA_path_file.readlines()
         for i in range(0, len(EdgeA_tot)):
@@ -258,7 +290,7 @@ def PIP_Traj_Reader(index):
                 EdgeAList_i.append(EdgeAString[3*j:3*j+3])
             EdgeAList.append(EdgeAList_i)
 
-    EdgeB_path = "../" + ExpName + "/EdgeBTraj" + index + ".txt"
+    EdgeB_path = ExpName + "Data/EdgeBTraj" + index + ".txt"
     with open(EdgeB_path,'r') as EdgeB_path_file:
         EdgeB_tot = EdgeB_path_file.readlines()
         for i in range(0, len(EdgeB_tot)):
@@ -269,7 +301,7 @@ def PIP_Traj_Reader(index):
                 EdgeBList_i.append(EdgeBString[3*j:3*j+3])
             EdgeBList.append(EdgeBList_i)
 
-    EdgeCOM_path = "../" + ExpName + "/EdgeCOMTraj" + index + ".txt"
+    EdgeCOM_path = ExpName + "Data/EdgeCOMTraj" + index + ".txt"
     with open(EdgeCOM_path,'r') as EdgeCOM_path_file:
         EdgeCOM_tot = EdgeCOM_path_file.readlines()
         for i in range(0, len(EdgeCOM_tot)):
@@ -280,7 +312,7 @@ def PIP_Traj_Reader(index):
                 EdgeCOMList_i.append(EdgeCOMString[3*j:3*j+3])
             EdgeCOMList.append(EdgeCOMList_i)
 
-    Edgex_path = "../" + ExpName + "/EdgexTraj" + index + ".txt"
+    Edgex_path = ExpName + "Data/EdgexTraj" + index + ".txt"
     with open(Edgex_path,'r') as Edgex_path_file:
         Edgex_tot = Edgex_path_file.readlines()
         for i in range(0, len(Edgex_tot)):
@@ -291,7 +323,7 @@ def PIP_Traj_Reader(index):
                 EdgexList_i.append(EdgexString[3*j:3*j+3])
             EdgexList.append(EdgexList_i)
 
-    Edgey_path = "../" + ExpName + "/EdgeyTraj" + index + ".txt"
+    Edgey_path = ExpName + "Data/EdgeyTraj" + index + ".txt"
     with open(Edgey_path,'r') as Edgey_path_file:
         Edgey_tot = Edgey_path_file.readlines()
         for i in range(0, len(Edgey_tot)):
@@ -302,7 +334,7 @@ def PIP_Traj_Reader(index):
                 EdgeyList_i.append(EdgeyString[3*j:3*j+3])
             EdgeyList.append(EdgeyList_i)
 
-    Edgez_path = "../" + ExpName + "/EdgezTraj" + index + ".txt"
+    Edgez_path = ExpName + "Data/EdgezTraj" + index + ".txt"
     with open(Edgez_path,'r') as Edgez_path_file:
         Edgez_tot = Edgez_path_file.readlines()
         for i in range(0, len(Edgez_tot)):
@@ -527,7 +559,7 @@ def Robot_COM_Plot(sim_robot, vis):
     vis.hideLabel("COM",True)
     vis.setColor("COM", 0.0, 204.0/255.0, 0.0, 1.0)
     vis.setAttribute("COM",'width', 7.5)
-    print COMPos_start
+    # print COMPos_start
 
 def GhostPlot(vis, NumberOfPoses, StepIndex, PoseSepIndex):
     FrameIndex = int(math.floor(StepIndex/PoseSepIndex))-1
@@ -536,15 +568,38 @@ def GhostPlot(vis, NumberOfPoses, StepIndex, PoseSepIndex):
     for i in range(0, FrameIndex):
         vis.hide("Ghost" + str(i),hidden=False)
 
-def PIP_Traj_Plot(world, DOF, state_traj, PIP_traj, CPFlag, delta_t=0.5):
+def AssumedContacts(sim_robot, contact_link_dictionary, contact_status_dictionary):
+    # This function is used to get all the active contacts out
+    ActiveContacts = []
+    for i in contact_link_dictionary.keys():
+        for j in contact_status_dictionary[i]:
+            if j is 1:
+                ActiveContact = sim_robot.link(i).getWorldPosition(contact_link_dictionary[i][j])
+                ActiveContacts.append(ActiveContact)
+    return ActiveContacts
+
+def FailureIndicator(Traj):
+    FailureFlag = False
+    FailureIndex = 0
+    for TrajIndex in range(0, len(Traj)):
+        if(Traj[TrajIndex]>0):
+            FailureFlag = True
+            FailureIndex = TrajIndex + 1
+            return FailureFlag, FailureIndex
+    return FailureFlag, FailureIndex
+
+def Traj_Vis(world, DOF, robot_traj, PIP_traj, CPFlag, delta_t=0.5):
     # Initialize the robot motion viewer
     robot_viewer = MyGLPlugin(world)
-    # Here it is to unpack the robot optimized solution into a certain sets of the lists
 
+    # Here it is to unpack the robot optimized solution into a certain sets of the lists
     vis.pushPlugin(robot_viewer)
     vis.add("world", world)
     vis.show()
 
+    ipdb.set_trace()
+
+    state_traj = robot_traj[0]
     sim_robot = world.robot(0)
     EdgeAList = PIP_traj[0]
     EdgeBList = PIP_traj[1]
@@ -557,31 +612,86 @@ def PIP_Traj_Plot(world, DOF, state_traj, PIP_traj, CPFlag, delta_t=0.5):
     EffectiveTrajLength = len(EdgeAList)
     RedundantTrajLength = TotalTrajLength - EffectiveTrajLength
 
-    # ipdb.set_trace()
+    NumberOfConfigs = len(state_traj)
 
-    InfeasiFlag = 0
-    # state_traj = state_traj[0:250]
+    TransScale = 0.35
 
-    # NumberOfPoses = 10
-    NumberOfConfigs = len(state_traj);
-    # PoseSepIndex = int(math.floor(NumberOfConfigs/NumberOfPoses))
-    # ColorList = np.linspace(255, 0, NumberOfPoses);
+    PVKRBcolor = [0, 0.4470, 0.7410]
+    PVKCPcolor = [0.6588, 0.6588, 0.1961]
+    PVKHJBcolor = [0.4940, 0.1840, 0.5560]
+    ZSCcolor = [0.3010, 0.7450, 0.9330]
+    OEcolor = [0.6350, 0.0780, 0.1840]
+    CPcolor = [0.25, 0.25, 0.25]
+    ZMPcolor = [0.75, 0, 0.75]
 
-    # for i in range(0, NumberOfPoses):
-    #     GhostPose = state_traj[i * PoseSepIndex]
-    #     vis.add("Ghost" + str(i), GhostPose)
-    #     vis.hide("Ghost" + str(i))
-    #     GhostPostColor = ColorList[i]
-    #     vis.setColor("Ghost" + str(i), GhostPostColor/255.0, GhostPostColor/255.0, GhostPostColor/255.0, 0.36)
+    if CPFlag is 2:
+        PVKRB_traj = robot_traj[1]
+        PVKCP_traj = robot_traj[2]
+        PVKHJB_traj = robot_traj[3]
+        ZSC_traj = robot_traj[4]
+        OE_traj = robot_traj[5]
+        CP_traj = robot_traj[6]
+        ZMP_traj = robot_traj[7]
 
-    StepIndex = -1
+        PVKRBFlag, PVKRBIndex = FailureIndicator(PVKRB_traj)
+        PVKCPFlag, PVKCPIndex = FailureIndicator(PVKCP_traj)
+        PVKHJBFlag, PVKHJBIndex = FailureIndicator(PVKHJB_traj)
+        ZSCFlag, ZSCIndex = FailureIndicator(ZSC_traj)
+        OEFlag, OEIndex = FailureIndicator(OE_traj)
+        CPFlag, CPIndex = FailureIndicator(CP_traj)
+        ZMPFlag, ZMPIndex = FailureIndicator(ZMP_traj)
+
+        Flags = [PVKRBFlag, PVKCPFlag, PVKHJBFlag, ZSCFlag, OEFlag, CPFlag, ZMPFlag]
+        Indices = [PVKRBIndex, PVKCPIndex, PVKHJBIndex, ZSCIndex, OEIndex, CPIndex, ZMPIndex]
+
+        if PVKRBFlag is True:
+            GhostPose = state_traj[PVKRBIndex + RedundantTrajLength]
+            vis.add("PVKRBGhost", GhostPose)
+            vis.hide("PVKRBGhost")
+            vis.setColor("PVKRBGhost", PVKRBcolor[0], PVKRBcolor[1], PVKRBcolor[2], TransScale)
+
+        if PVKCPFlag is True:
+            GhostPose = state_traj[PVKCPIndex + RedundantTrajLength]
+            vis.add("PVKCPGhost", GhostPose)
+            vis.hide("PVKCPGhost")
+            vis.setColor("PVKCPGhost", PVKCPcolor[0], PVKCPcolor[1], PVKCPcolor[2], TransScale)
+
+        if PVKHJBFlag is True:
+            GhostPose = state_traj[PVKHJBIndex + RedundantTrajLength]
+            vis.add("PVKHJBGhost", GhostPose)
+            vis.hide("PVKHJBGhost")
+            vis.setColor("PVKHJBGhost", PVKHJBcolor[0], PVKHJBcolor[1], PVKHJBcolor[2], TransScale)
+
+        if ZSCFlag is True:
+            GhostPose = state_traj[ZSCIndex + RedundantTrajLength]
+            vis.add("ZSCGhost", GhostPose)
+            vis.hide("ZSCGhost")
+            vis.setColor("ZSCGhost", ZSCcolor[0], ZSCcolor[1], ZSCcolor[2], TransScale)
+
+        if OEFlag is True:
+            GhostPose = state_traj[OEIndex + RedundantTrajLength]
+            vis.add("OEGhost", GhostPose)
+            vis.hide("OEGhost")
+            vis.setColor("OEGhost", OEcolor[0], OEcolor[1], OEcolor[2], TransScale)
+
+        if CPFlag is True:
+            GhostPose = state_traj[CPIndex + RedundantTrajLength]
+            vis.add("CPGhost", GhostPose)
+            vis.hide("CPGhost")
+            vis.setColor("CPGhost", CPcolor[0], CPcolor[1], CPcolor[2], TransScale)
+
+        if ZMPFlag is True:
+            GhostPose = state_traj[ZMPIndex + RedundantTrajLength]
+            vis.add("ZMPGhost", GhostPose)
+            vis.hide("ZMPGhost")
+            vis.setColor("ZMPGhost", ZMPcolor[0], ZMPcolor[1], ZMPcolor[2], TransScale)
+
     while vis.shown():
         # This is the main plot program
-        for i in range(0,EffectiveTrajLength):
+        InfeasiFlag = 0
+        for i in range(0, EffectiveTrajLength):
             vis.lock()
             config_i = state_traj[i + RedundantTrajLength]
-            # GhostPlot(vis, NumberOfPoses, StepIndex, PoseSepIndex)
-
             sim_robot.setConfig(config_i[0:DOF])
             COM_Pos = sim_robot.getCom()
             Robot_COM_Plot(sim_robot, vis)
@@ -591,9 +701,7 @@ def PIP_Traj_Plot(world, DOF, state_traj, PIP_traj, CPFlag, delta_t=0.5):
             EdgexList_i = EdgexList[i]
             EdgeyList_i = EdgeyList[i]
             EdgezList_i = EdgezList[i]
-            StepIndex = StepIndex + 1
 
-            # j_list = [0,1,2,3]
             for j in range(0, len(EdgeAList_i)):
                 EdgeA = EdgeAList_i[j]
                 EdgeB = EdgeBList_i[j]
@@ -602,7 +710,26 @@ def PIP_Traj_Plot(world, DOF, state_traj, PIP_traj, CPFlag, delta_t=0.5):
                 Edgey = EdgeyList_i[j]
                 Edgez = EdgezList_i[j]
                 PIP_Subplot(j, EdgeA, EdgeB, EdgeCOM, Edgex, Edgey, Edgez, COM_Pos, vis)
-            if CPFlag is 1:
+
+            # For the 7 fall indicators
+            if (PVKRBFlag is True) and (i>=PVKRBIndex):
+                vis.hide("PVKRBGhost", False)
+            if (PVKCPFlag is True) and (i>=PVKCPIndex):
+                vis.hide("PVKCPGhost", False)
+            if (PVKHJBFlag is True) and (i>=PVKHJBIndex):
+                vis.hide("PVKHJBGhost", False)
+            if (ZSCFlag is True) and (i>=ZSCIndex):
+                vis.hide("ZSCGhost", False)
+            if (OEFlag is True) and (i>OEIndex):
+                vis.hide("OEGhost", False)
+            if (CPFlag is True) and (i>CPIndex):
+                vis.hide("CPGhost", False)
+            if (ZMPFlag is True) and (i>ZMPIndex):
+                vis.hide("ZMPGhost", False)
+            print Flags
+            print Indices
+
+            if CPFlag is 1 or 2:
                 try:
                     h = ConvexHull(EdgeAList_i)
                 except:
@@ -614,14 +741,29 @@ def PIP_Traj_Plot(world, DOF, state_traj, PIP_traj, CPFlag, delta_t=0.5):
                     vis.setDrawFunc("blah", my_draw_hull)
                 else:
                     print "Input Contact Polytope Infeasible!"
-            # if StepIndex ==NumberOfConfigs:
-            #     StepIndex = 0
             vis.unlock()
             time.sleep(delta_t)
-            # if StepIndex ==225:
-                # ipdb.set_trace()
+
             for j in range(0, len(EdgeAList_i)):
                 PIP_Remove(j, vis)
+
+            if((CPFlag is 1 or 2) and (InfeasiFlag is 0)):
+                vis.remove("blah")
+
+        if (PVKRBFlag is True):
+            vis.hide("PVKRBGhost")
+        if (PVKCPFlag is True):
+            vis.hide("PVKCPGhost")
+        if (PVKHJBFlag is True):
+            vis.hide("PVKHJBGhost")
+        if (ZSCFlag is True):
+            vis.hide("ZSCGhost")
+        if (OEFlag is True):
+            vis.hide("OEGhost")
+        if (CPFlag is True):
+            vis.hide("CPGhost")
+        if (ZMPFlag is True):
+            vis.hide("ZMPGhost")
         print "End"
 
 def ContactVerticesAppender(CP, point):
@@ -661,55 +803,56 @@ def COM2IntersectionPlot(i, vis, COM_Pos, Intersection):
 def main(*arg):
 
     Exp_Name = arg[0]
-    PIP_Flag = arg[1]
+    VisFlag = arg[1]
 
-    # This funciton is used for the multi-contact humanoid push recovery
-    # The default robot to be loaded is the HRP2 robot in this same folder
+    # The default robot to be loaded is the HRP2 robot.
     Robot_Option = "../user/hrp2/"
-    # Robot_Option = "../user/atlas/"
-
-    print "This funciton is used for the 3-D Humanoid Multi-Contact Fall Mitigation"
-    if len(sys.argv)<=1:
-        print "USAGE: The default robot to be loaded is the JQ robot"
-        exit()
     world = WorldModel()                    # WorldModel is a pre-defined class
-    input_files = sys.argv[1:];             # sys.argv will automatically capture the input files' names
-    for fn in input_files:
-        result = world.readFile(fn)         # Here result is a boolean variable indicating the result of this loading operation
-        if not result:
-            raise RuntimeError("Unable to load model " + fn)
 
-    Contact_Link_Dictionary = Contact_Link_Reader("ContactLink.txt", Robot_Option)
-    # Contact_Status_Dictionary_Init = Contact_Status_Reader("Init_Contact.txt", Robot_Option)
     if ".path" in Exp_Name:
-        # In this case, what we have is a path
+        # Then this means that we are given the robot trajectories for experimentations.
         Real_Exp_Name = copy.deepcopy(Exp_Name)
         Realer_Exp_Name = ""
         for str_i in Real_Exp_Name:
             if str_i == ".":
                 break;
             Realer_Exp_Name = Realer_Exp_Name + str_i;
-        delta_t, DOF, state_traj = Traj_Loader_fn(Realer_Exp_Name)
-        if(PIP_Flag == 0):
-            Robot_Traj_Plot(world, DOF, state_traj, Contact_Link_Dictionary, delta_t)
+        delta_t, DOF, robot_traj, PVKRB_traj, PVKCP_traj, PVKHJB_traj, ZSC_traj, OE_traj, CP_traj, ZMP_traj = Traj_Loader_fn(Realer_Exp_Name)
+        # The next step is to load in robot's XML file
+        XML_path = ExpName + "Envi/Envi" + Realer_Exp_Name + ".xml"
+        result = world.readFile(XML_path)         # Here result is a boolean variable indicating the result of this loading operation
+        if not result:
+            raise RuntimeError("Unable to load model " + fn)
+        Contact_Link_Dictionary = Contact_Link_Reader("ContactLink.txt", ExpName+"User/")
+        Contact_Status_Dictionary = Contact_Status_Reader("InitContact.txt", ExpName+"User/")
+
+        # There are five Vis flag options:
+        """
+            * VisFlag = 0 : Pure Animation
+            * VisFlag = 1 : Pure Animation with ePIPs and edges
+            * VisFlag = 2 : Pure Animation with eCH and ePIPs
+            * VisFlag = 3 : Pure Animation With eCH, ePIPs, and Ghosts
+        """
+
+        if(VisFlag == 0):
+            Robot_Traj_Plot(world, DOF, robot_traj, Contact_Link_Dictionary, delta_t)
         else:
-            if(PIP_Flag == 1):
-                # In this case, we have to load in another sets of information for visualization
-                # PIPList = PIP_Info_Reader(Exp_Name + "PIPs.txt", Robot_Option)
-                # PIP_Config_Plot(world, DOF, State_Init, PIPList)
+            if(VisFlag == 1):
                 PIPList = PIP_Traj_Reader(Realer_Exp_Name)
                 CPFlag = 0
-                PIP_Traj_Plot(world, DOF, state_traj, PIPList, CPFlag, delta_t)
+                Traj_Vis(world, DOF, robot_traj, PIPList, CPFlag, delta_t)
             else:
-                if PIP_Flag is 2:
-                    # In this case, the contact polytope is also to be rendered.
-                    # Then we should get all the vertices out from contact polytope.
+                if VisFlag is 2:
                     PIPList = PIP_Traj_Reader(Realer_Exp_Name)
                     CPFlag = 1
-                    PIP_Traj_Plot(world, DOF, state_traj, PIPList, CPFlag, delta_t)
+                    Traj_Vis(world, DOF, robot_traj, PIPList, CPFlag, delta_t)
                 else:
-                    print "Flag value not feasible for trajectory visualization!"
-
+                    if VisFlag is 3:
+                        PIPList = PIP_Traj_Reader(Realer_Exp_Name)
+                        CPFlag = 2
+                        Traj_Vis(world, DOF, [robot_traj, PVKRB_traj, PVKCP_traj, PVKHJB_traj, ZSC_traj, OE_traj, CP_traj, ZMP_traj], PIPList, CPFlag, delta_t)
+                    else:
+                        raise RuntimeError("Flag value not feasible for trajectory visualization!")
     else:
         # In this case, what we have is a config
         # The following function can be used in two ways: the first way is to load the Config_Init.config file while the second way is to load two
@@ -726,7 +869,6 @@ def main(*arg):
         Convex_Edges_List = Convex_Edge_Reader(Exp_Name + "CHEdges.txt", Robot_Option);
 
         delta_t = 0.5
-
 
         if(PIP_Flag == 0):
             Robot_Config_Plot(world, DOF, State_Init, Contact_Link_Dictionary, Convex_Edges_List)
@@ -745,7 +887,7 @@ def main(*arg):
                         # Four plots should be shown alternatively
 
                         # 1. Contact Polytope with Edges
-                        # 2. Contact Polytope with PIPs
+                        # 2. Contact Polytope with PIPsExpName
                         # 3. Contact Polytope with EPIPs
                         # 4. E Contact Polytope with EPIPs
 
@@ -883,7 +1025,7 @@ def main(*arg):
                                 EdgeAList = PIPList[0]
                                 for i in range(0, len(EdgeAList)):
                                     Edge_Index = str(i)
-                                    vis.remove("PIPEdge:" + Edge_Index)
+                                    vis.remove("PIPEExpNamedge:" + Edge_Index)
                                     vis.remove("PIPEdgeCOM:" + Edge_Index)
                                     vis.remove("PIPEdgex:" + Edge_Index)
                                     vis.remove("PIPEdgey:" + Edge_Index)
@@ -904,8 +1046,6 @@ def main(*arg):
                                 robot_viewer.mode_no = 1
                             robot_viewer.mode_no = 3
 
-
 if __name__ == "__main__":
-    # main("Cover1", 0)
-    main("InitConfig", 2)
-    # main("1.path", 2)
+    # main("InitConfig", 2)
+    main("83.path", 3)

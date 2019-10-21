@@ -12,6 +12,7 @@
 #include <bits/stdc++.h>
 #include <sstream>
 #include <iterator>
+#include <boost/algorithm/string.hpp>
 
 static string cone_file_name = "CCV";
 
@@ -39,8 +40,108 @@ static void String2Coordinates(const string& str_line, std::vector<Vector3>& Con
   }
 }
 
+static bool INEEmptyValidator()
+{
+  // This function is used to make sure that if the cone_file_name + ".ext" is empty then no need to read it anymore.
+  string cone_file_path = cone_file_name + ".ext";
+  ifstream ConeInfofile (cone_file_path);
+  string str_line;
+  string keyword="region found empty";
+  bool ValidFlag = true;
+  if (ConeInfofile.is_open())
+  {
+    while (getline (ConeInfofile, str_line))
+    {
+      int EmptyPos = str_line.find(keyword);
+      if (EmptyPos != string::npos)
+      {
+        ValidFlag =  false;
+      }
+    }
+    ConeInfofile.close();
+  }
+  else std::cerr << "Unable to open" + cone_file_name + ".ext for Empty Validation"<<std::endl;
+  return ValidFlag;
+}
+
+static bool INEZeroValidator()
+{
+  // This function is used to make sure that if the cone_file_name + ".ext" is empty then no need to read it anymore.
+  string cone_file_path = cone_file_name + ".ext";
+  ifstream ConeInfofile (cone_file_path);
+  string str_line;
+  string keyword="begin";
+  bool ValidFlag = true;
+  bool StartFlag = false;
+  if (ConeInfofile.is_open())
+  {
+    while (getline (ConeInfofile, str_line))
+    {
+      switch (StartFlag)
+      {
+        case true:
+        {
+          vector<string> strs;
+          boost::split(strs,str_line, boost::is_any_of("  "));
+          if(strs[0]=="0")
+          {
+            ValidFlag = false;
+          }
+          StartFlag = false;
+        }
+        break;
+        default:
+        {
+        }
+        break;
+      }
+      int ZeroPos = str_line.find(keyword);
+      if (ZeroPos != string::npos)
+      {
+        StartFlag =  true;;
+      }
+    }
+    ConeInfofile.close();
+  }
+  else std::cerr << "Unable to open" + cone_file_name + ".ext for Zero Validation"<<std::endl;
+  return ValidFlag;
+}
+
 static std::vector<Vector3> INEReader()
 {
+  std::vector<Vector3>  ConeVertices;
+
+  bool EmptyFlag = INEEmptyValidator();
+  bool ZeroFlag = INEZeroValidator();
+
+  switch (EmptyFlag)
+  {
+    case false:
+    {
+      return ConeVertices;
+    }
+    break;
+    default:
+    {
+
+    }
+    break;
+  }
+
+  switch (ZeroFlag)
+  {
+    case false:
+    {
+      return ConeVertices;
+    }
+    break;
+    default:
+    {
+
+    }
+    break;
+  }
+
   // This function is used to read in the cone file.
   string cone_file_path = cone_file_name + ".ext";
   ifstream ConeInfofile (cone_file_path);
@@ -49,7 +150,6 @@ static std::vector<Vector3> INEReader()
   string start_keyword="real";
   string end_keyword="end";
 
-  std::vector<Vector3>  ConeVertices;
   int valid_flag = 0;
   if (ConeInfofile.is_open())
   {
@@ -59,7 +159,7 @@ static std::vector<Vector3> INEReader()
       int end_pos = str_line.find(end_keyword);
       if(end_pos != string::npos)
       {
-        return ConeVertices;
+        valid_flag = 0;
       }
       switch (valid_flag)
       {
@@ -78,7 +178,7 @@ static std::vector<Vector3> INEReader()
     }
     ConeInfofile.close();
   }
-  else cout << "Unable to open file";
+  else std::cerr << "Unable to open" + cone_file_name + ".ext"<<std::endl;
 
   return ConeVertices;
 }
@@ -253,9 +353,14 @@ static std::vector<Vector3> CentroidalCone(const Matrix& H, const Vector3& COMPo
   }
   A->representation = dd_Inequality;
   poly=dd_DDMatrix2Poly(A, &err);  /* compute the second (generator) representation */
+  std::vector<Vector3> ConeVertices;
   if (err!=dd_NoError)
   {
-    // printf("CentroidalCone: Given Matrix is not compatiable!\n");
+    printf("CentroidalCone: Given Matrix is not compatiable!\n");
+    dd_FreeMatrix(A);
+    dd_FreePolyhedra(poly);
+    dd_free_global_constants();  /* At the end, this must be called. */
+    return ConeVertices;
   }
   G=dd_CopyGenerators(poly);
   // dd_WriteMatrix(stdout,G);   printf("\n");
@@ -279,8 +384,6 @@ static std::vector<Vector3> CentroidalCone(const Matrix& H, const Vector3& COMPo
   string del_command = "rm -f " + cone_file_name + ".*";
   const char *delete_command = del_command.c_str();
   std::system(delete_command);
-
-  std::vector<Vector3> ConeVertices;
 
   switch (ConeInequalities.size())
   {
