@@ -280,6 +280,36 @@ static std::vector<Vector3> CentroidalCone(const Matrix& H, const Vector3& COMPo
   const char *delete_command = del_command.c_str();
   std::system(delete_command);
 
+  std::vector<Vector3> ConeVertices;
+
+  switch (ConeInequalities.size())
+  {
+    case 0:
+    {
+      return ConeVertices;
+    }
+    break;
+    case 1:
+    {
+      return ConeVertices;
+    }
+    break;
+    case 2:
+    {
+      return ConeVertices;
+    }
+    break;
+    case 3:
+    {
+      return ConeVertices;
+    }
+    break;
+    default:
+    {
+    }
+    break;
+  }
+
   INEWriter(ConeInequalities);
 
   string cone_command = "./../../../cddplus/cddf+ " + cone_file_name + ".ine";
@@ -289,7 +319,7 @@ static std::vector<Vector3> CentroidalCone(const Matrix& H, const Vector3& COMPo
   const char *command = cone_command.c_str();
   std::system(command);
 
-  std::vector<Vector3> ConeVertices = INEReader();
+  ConeVertices = INEReader();
 
   // string del_command = "rm -f " + cone_file_name + ".*";
   // const char *delete_command = del_command.c_str();

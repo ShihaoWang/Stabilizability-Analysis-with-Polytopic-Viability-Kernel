@@ -132,6 +132,13 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
   int StepIndex = 0;
   for (int i = 0; i < qTraj.size(); i++)        // For the sake of Centroidal Acceleration for ZMP
   {
+    std::printf("Index %d\n", StepIndex);
+
+    if (StepIndex ==46)
+    {
+      int a = 1;
+    }
+
     Config qNow = qTraj[i];
     Config qdotNow = qdotTraj[i];
     SimRobot.UpdateConfig(qNow);
@@ -229,23 +236,23 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
     StepIndex = StepIndex + 1;
   }
 
-  // Here the job is to write down the centroidal trajectories.
-  ObjTrajWriter(COMx, FileIndex, "COMx");
-  ObjTrajWriter(COMy, FileIndex, "COMy");
-  ObjTrajWriter(COMz, FileIndex, "COMz");
-  ObjTrajWriter(COMVelx, FileIndex, "COMVelx");
-  ObjTrajWriter(COMVely, FileIndex, "COMVely");
-  ObjTrajWriter(COMVelz, FileIndex, "COMVelz");
-
-  ObjTrajWriter(PVKRBTraj, FileIndex, "PVKRB");
-  ObjTrajWriter(PVKCPTraj, FileIndex, "PVKCP");
-  ObjTrajWriter(PVKHJBTraj, FileIndex, "PVKHJB");
-
-  ObjTrajWriter(ZSCTraj, FileIndex, "ZSC");
-
-  ObjTrajWriter(OETraj, FileIndex, "OE");
-  ObjTrajWriter(CPTraj, FileIndex, "CP");
-  ObjTrajWriter(ZMPTraj, FileIndex, "ZMP");
+  // // Here the job is to write down the centroidal trajectories.
+  // ObjTrajWriter(COMx, FileIndex, "COMx");
+  // ObjTrajWriter(COMy, FileIndex, "COMy");
+  // ObjTrajWriter(COMz, FileIndex, "COMz");
+  // ObjTrajWriter(COMVelx, FileIndex, "COMVelx");
+  // ObjTrajWriter(COMVely, FileIndex, "COMVely");
+  // ObjTrajWriter(COMVelz, FileIndex, "COMVelz");
+  //
+  // ObjTrajWriter(PVKRBTraj, FileIndex, "PVKRB");
+  // ObjTrajWriter(PVKCPTraj, FileIndex, "PVKCP");
+  // ObjTrajWriter(PVKHJBTraj, FileIndex, "PVKHJB");
+  //
+  // ObjTrajWriter(ZSCTraj, FileIndex, "ZSC");
+  //
+  // ObjTrajWriter(OETraj, FileIndex, "OE");
+  // ObjTrajWriter(CPTraj, FileIndex, "CP");
+  // ObjTrajWriter(ZMPTraj, FileIndex, "ZMP");
 
   return;
 }
@@ -253,8 +260,8 @@ static void CPEvaluation(const int & FileIndex, Robot& SimRobot, ViabilityKernel
 void CapturePointAnalysis(Robot & SimRobot, ViabilityKernelInfo & VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo)
 {
   // This function is use to generate data analysis for experimentation trajectories.
-  string UserPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/Case 6/";
-  for (int i = 289; i < 351; i++)
+  string UserPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/";
+  for (int i = 326; i < 351; i++)
   {
     int FileIndex = i + 1;
     std::vector<Config> qTraj, qdotTraj;
