@@ -13,8 +13,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   WorldSimulation& Sim = Backend.sim;
 
   /* 0. Load the XML World file */
-  // string XMLFileStr = FolderPath + "/Sample.xml";
-  string XMLFileStr = FolderPath + "/build/Envi327.xml";
+  string XMLFileStr = FolderPath + "/Sample.xml";
   const char* XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!Backend.LoadAndInitSim(XMLFile))
   {
@@ -35,13 +34,12 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   /* 3. Generation of robot's configuration and World XML file */
   Robot SimRobot = *world.robots[0];
   std::vector<double> InitRobotConfig(SimRobot.q.size()), InitRobotVelocity(SimRobot.q.size()), ZeroRobotVelocity(SimRobot.q.size());
-  // SignedDistanceFieldInfo SDFInfo = InitEnviGenerator(SimRobot, RobotLinkInfo, RobotContactInfo, UserFilePath, InitRobotConfig);
-  // RobotConfigWriter(InitRobotConfig, UserFilePath, "InitConfig.config");
+  SignedDistanceFieldInfo SDFInfo = InitEnviGenerator(SimRobot, RobotLinkInfo, RobotContactInfo, UserFilePath, InitRobotConfig);
+  RobotConfigWriter(InitRobotConfig, UserFilePath, "InitConfig.config");
 
-
-  // Post-data process for Capture Point
-  SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, 251);
-  CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
+  // // Post-data process for Capture Point
+  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, 251);
+  // CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
 
   Config RobotConfigNew(InitRobotConfig);
   SimRobot.UpdateConfig(RobotConfigNew);
@@ -164,20 +162,20 @@ int main()
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
   for (int i = 0; i < 551; i++)
   {
-    // if(i%5==0)
-    // {
-    //   string mv_command = "mv -f *Traj*.* ./Data";
-    //   const char *mv_command_str = mv_command.c_str();
-    //   std::system(mv_command_str);
-    //
-    //   mv_command = "mv -f Specs*.* ./Data";
-    //   mv_command_str = mv_command.c_str();
-    //   std::system(mv_command_str);
-    //
-    //   mv_command = "mv -f Envi*.* ./Envi";
-    //   mv_command_str = mv_command.c_str();
-    //   std::system(mv_command_str);
-    // }
+    if(i%5==0)
+    {
+      string mv_command = "mv -f *Traj*.* ./Data";
+      const char *mv_command_str = mv_command.c_str();
+      std::system(mv_command_str);
+
+      mv_command = "mv -f Specs*.* ./Data";
+      mv_command_str = mv_command.c_str();
+      std::system(mv_command_str);
+
+      mv_command = "mv -f Envi*.* ./Envi";
+      mv_command_str = mv_command.c_str();
+      std::system(mv_command_str);
+    }
     // Simulation loop at each time
     std::string FolderPath = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel";
     bool InitializationFlag = false;
