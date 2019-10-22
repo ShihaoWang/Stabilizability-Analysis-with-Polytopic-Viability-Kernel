@@ -46,7 +46,9 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   SimRobot.UpdateGeometry();
 
   bool InitVeloFlag = false;
-  while (InitVeloFlag==false)
+  int IterIndex = 0;
+  int IterLimit = 25;
+  while ((InitVeloFlag==false)&&(IterIndex<IterLimit))
   {
     for (int i = 0; i < SimRobot.q.size(); i++)
     {
@@ -55,6 +57,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
     }
     SimRobot.dq = InitRobotVelocity;
     InitVeloFlag = InitialVelocityGene(SimRobot, RobotLinkInfo, RobotContactInfo, KEInit, InitRobotVelocity);
+    IterIndex++;
   }
   SimRobot.UpdateConfig(Config(InitRobotConfig));
   SimRobot.dq = InitRobotVelocity;
@@ -129,9 +132,10 @@ static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
   std::random_device rd;
   std::mt19937 gen(rd());
 
-  // 2 contact
+  // Scenario 1
   double KELow = 0.0;
-  double KEUpp = 35.0;
+  double KEUpp = 50.0;
+
   std::uniform_real_distribution<> KEDis(KELow, KEUpp);
   KEInit = KEDis(gen);
 
@@ -160,7 +164,7 @@ int main()
   string ViabilityKernelPath = "/home/motion/Desktop/VKACC/build/2.25/";
   bool VKFastFlag = false;
   ViabilityKernelInfo VKObj = ViabilityKernelDataLoader(ViabilityKernelPath, VKFastFlag);
-  for (int i = 0; i < 551; i++)
+  for (int i = 0; i < 1001; i++)
   {
     if(i%5==0)
     {

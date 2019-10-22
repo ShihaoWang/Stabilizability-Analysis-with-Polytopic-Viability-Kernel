@@ -118,6 +118,7 @@ static std::vector<Vector3> INEReader()
   {
     case false:
     {
+      std::printf("INE File Empty Failure!\n");
       return ConeVertices;
     }
     break;
@@ -132,6 +133,7 @@ static std::vector<Vector3> INEReader()
   {
     case false:
     {
+      std::printf("INE File Zero Failure!\n");
       return ConeVertices;
     }
     break;

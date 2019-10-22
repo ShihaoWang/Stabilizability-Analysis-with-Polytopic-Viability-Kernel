@@ -14,8 +14,9 @@ import numpy as np
 
 # This file contains functions related to
 
-ExpName = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/"
-# ExpName = "/home/motion/Desktop/1/"
+# ExpName = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/"
+# ExpName = "/home/motion/Desktop/Scenarios/1/"
+ExpName = "/home/motion/Desktop/Scenarios/2/"
 mode_no = 1;
 
 class MyGLPlugin(vis.GLPluginInterface):
@@ -1048,4 +1049,4 @@ def main(*arg):
 
 if __name__ == "__main__":
     # main("InitConfig", 2)
-    main("83.path", 3)
+    main("1.path", 3)
