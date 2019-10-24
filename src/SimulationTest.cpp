@@ -44,22 +44,6 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     }
   }
 
-  // // Case 0
-  // Vector3 CentDir = CentDirection;
-  // double CentDirNorm = sqrt(CentDir.x * CentDir.x + CentDir.y * CentDir.y + CentDir.z * CentDir.z);
-  // CentDir.x = CentDir.x/CentDirNorm;
-  // CentDir.y = CentDir.y/CentDirNorm;
-  // CentDir.z = CentDir.z/CentDirNorm;
-  // std::uniform_real_distribution<> dis(6000.0, 7500.0);
-  // double ForceMag = dis(gen);
-  // double Fx_t = ForceMag * CentDir.x;
-  // double Fy_t = ForceMag * CentDir.y;
-  // double Fz_t = ForceMag * CentDir.z;
-  //
-  // double Fx_t_k = Fx_t/t_last;
-  // double Fy_t_k = Fy_t/t_last;
-  // double Fz_t_k = Fz_t/t_last;
-
   /* Override the default controller with a PolynomialPathController */
   auto NewControllerPtr = std::make_shared<PolynomialPathController>(*Sim.world->robots[0]);
   Sim.SetController(0, NewControllerPtr);
@@ -146,6 +130,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
         1. Rigid-body controller
         2. Whole-body QP stabilizing controller
   */
+
   int ControllerType = 2;
   int StepIndex = 0;
 
@@ -183,14 +168,6 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     }
 
     Robot SimRobot = *Sim.world->robots[0];
-
-   //  if(Sim.time<=t_impul)
-   // {
-   //   Fx_t = Fx_t_k * (Sim.time - t_cur);
-   //   Fy_t = Fy_t_k * (Sim.time - t_cur);
-   //   Fz_t = Fz_t_k * (Sim.time - t_cur);
-   //   dBodyAddForceAtPos(Sim.odesim.robot(0)->body(19), Fx_t, Fy_t, Fz_t, 0.0, 0.0, 0.25);
-   // }
 
     /* Robot's COMPos and COMVel */
     Vector3 COMPos(0.0, 0.0, 0.0), COMVel(0.0, 0.0, 0.0), COMAcc(0.0, 0.0, 0.0);

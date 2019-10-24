@@ -14,9 +14,11 @@ import numpy as np
 
 # This file contains functions related to
 
-# ExpName = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/"
+ExpName = "/home/motion/Desktop/Stabilizability-Analysis-with-Polytopic-Viability-Kernel/build/"
 # ExpName = "/home/motion/Desktop/Scenarios/1/"
-ExpName = "/home/motion/Desktop/Scenarios/2/"
+# ExpName = "/home/motion/Desktop/Scenarios/2/"
+# ExpName = "/home/motion/Desktop/Scenarios/4/"
+
 mode_no = 1;
 
 class MyGLPlugin(vis.GLPluginInterface):
@@ -548,7 +550,7 @@ def Robot_Traj_Plot(world, DOF, state_traj, contact_link_dictionary, delta_t=0.5
         for config_i in state_traj:
             vis.lock()
             sim_robot.setConfig(config_i[0:DOF])
-            Robot_COM_Plot(sim_robot, vis)
+            # Robot_COM_Plot(sim_robot, vis)
             vis.unlock()
             time.sleep(delta_t)
 
@@ -598,8 +600,7 @@ def Traj_Vis(world, DOF, robot_traj, PIP_traj, CPFlag, delta_t=0.5):
     vis.add("world", world)
     vis.show()
 
-    ipdb.set_trace()
-
+    # ipdb.set_trace()
     state_traj = robot_traj[0]
     sim_robot = world.robot(0)
     EdgeAList = PIP_traj[0]
@@ -626,6 +627,7 @@ def Traj_Vis(world, DOF, robot_traj, PIP_traj, CPFlag, delta_t=0.5):
     ZMPcolor = [0.75, 0, 0.75]
 
     if CPFlag is 2:
+        state_traj = robot_traj[0]
         PVKRB_traj = robot_traj[1]
         PVKCP_traj = robot_traj[2]
         PVKHJB_traj = robot_traj[3]
@@ -712,23 +714,23 @@ def Traj_Vis(world, DOF, robot_traj, PIP_traj, CPFlag, delta_t=0.5):
                 Edgez = EdgezList_i[j]
                 PIP_Subplot(j, EdgeA, EdgeB, EdgeCOM, Edgex, Edgey, Edgez, COM_Pos, vis)
 
-            # For the 7 fall indicators
-            if (PVKRBFlag is True) and (i>=PVKRBIndex):
-                vis.hide("PVKRBGhost", False)
-            if (PVKCPFlag is True) and (i>=PVKCPIndex):
-                vis.hide("PVKCPGhost", False)
-            if (PVKHJBFlag is True) and (i>=PVKHJBIndex):
-                vis.hide("PVKHJBGhost", False)
-            if (ZSCFlag is True) and (i>=ZSCIndex):
-                vis.hide("ZSCGhost", False)
-            if (OEFlag is True) and (i>OEIndex):
-                vis.hide("OEGhost", False)
-            if (CPFlag is True) and (i>CPIndex):
-                vis.hide("CPGhost", False)
-            if (ZMPFlag is True) and (i>ZMPIndex):
-                vis.hide("ZMPGhost", False)
-            print Flags
-            print Indices
+            # # For the 7 fall indicators
+            # if (PVKRBFlag is True) and (i>=PVKRBIndex):
+            #     vis.hide("PVKRBGhost", False)
+            # if (PVKCPFlag is True) and (i>=PVKCPIndex):
+            #     vis.hide("PVKCPGhost", False)
+            # if (PVKHJBFlag is True) and (i>=PVKHJBIndex):
+            #     vis.hide("PVKHJBGhost", False)
+            # if (ZSCFlag is True) and (i>=ZSCIndex):
+            #     vis.hide("ZSCGhost", False)
+            # if (OEFlag is True) and (i>OEIndex):
+            #     vis.hide("OEGhost", False)
+            # if (CPFlag is True) and (i>CPIndex):
+            #     vis.hide("CPGhost", False)
+            # if (ZMPFlag is True) and (i>ZMPIndex):
+            #     vis.hide("ZMPGhost", False)
+            # print Flags
+            # print Indices
 
             if CPFlag is 1 or 2:
                 try:
@@ -751,20 +753,20 @@ def Traj_Vis(world, DOF, robot_traj, PIP_traj, CPFlag, delta_t=0.5):
             if((CPFlag is 1 or 2) and (InfeasiFlag is 0)):
                 vis.remove("blah")
 
-        if (PVKRBFlag is True):
-            vis.hide("PVKRBGhost")
-        if (PVKCPFlag is True):
-            vis.hide("PVKCPGhost")
-        if (PVKHJBFlag is True):
-            vis.hide("PVKHJBGhost")
-        if (ZSCFlag is True):
-            vis.hide("ZSCGhost")
-        if (OEFlag is True):
-            vis.hide("OEGhost")
-        if (CPFlag is True):
-            vis.hide("CPGhost")
-        if (ZMPFlag is True):
-            vis.hide("ZMPGhost")
+        # if (PVKRBFlag is True):
+        #     vis.hide("PVKRBGhost")
+        # if (PVKCPFlag is True):
+        #     vis.hide("PVKCPGhost")
+        # if (PVKHJBFlag is True):
+        #     vis.hide("PVKHJBGhost")
+        # if (ZSCFlag is True):
+        #     vis.hide("ZSCGhost")
+        # if (OEFlag is True):
+        #     vis.hide("OEGhost")
+        # if (CPFlag is True):
+        #     vis.hide("CPGhost")
+        # if (ZMPFlag is True):
+        #     vis.hide("ZMPGhost")
         print "End"
 
 def ContactVerticesAppender(CP, point):
@@ -809,6 +811,8 @@ def main(*arg):
     # The default robot to be loaded is the HRP2 robot.
     Robot_Option = "../user/hrp2/"
     world = WorldModel()                    # WorldModel is a pre-defined class
+
+    ipdb.set_trace()
 
     if ".path" in Exp_Name:
         # Then this means that we are given the robot trajectories for experimentations.
@@ -1049,4 +1053,4 @@ def main(*arg):
 
 if __name__ == "__main__":
     # main("InitConfig", 2)
-    main("1.path", 3)
+    main("3.path", 3)
