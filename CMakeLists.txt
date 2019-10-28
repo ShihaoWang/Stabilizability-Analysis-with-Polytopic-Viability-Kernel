@@ -80,11 +80,7 @@ add_executable(MyApp
                src/SimulationTest.cpp
                src/ZeroStepCapturability.cpp
 	       src/ViabilityKernelLoader.cpp
-               src/HJBController.cpp
-	       src/HJBControllerVelo.cpp
 	       src/ConvexPolyhedron.cpp
-	       src/QPStabilizer.cpp
-	       src/StabilizingControllerGRB.cpp
 	       src/StabilizingControllerContact.cpp
 	       src/CapturePointAnalysis.cpp)
 
