@@ -11,6 +11,13 @@ This package is used to conduct failure detection for humanoid robot under multi
 **StabilizingControllerContact.cpp**: This file contains functions to calculate robot's whole-body controller with a QP approach. Robot's acceleration, joint torques, magnitudes of contact forces, and violation of contact acceleration constraints are minimized in a weighted sum fashion. The optimized acceleration is then used to update robot's configuration.
 
 **ConvexPolyhedron.cpp**: This file contains functions related to construction of contact polytope and support polygon, computation of fall indicators based on orbital energy, capture point, and Polytopic Viability Kernels.
+* PIPGenerator(): This function genearates a number of planar inverted pendulums based on active contacts and outputs a fall indicator based on an assumption that robot's CoM moves in a fashion which stabilizes itself globally (HJB method). 
+* RBGenerator(): This function calculates robot's fall indicator with a rigid-body assumption (Orbital Energy).
+* CPCEGenerator(): This function calculates robot's fall indicator with a Capture Point Approach.
+* ZeroStepCapturabilityGenerator(): This function evaluates robot's failure with an assumption that robot destabilizes itself in the same direction of its centroidal velocity at the instant of disturbance while satisfying frictional contact.
+* ZMPGeneratorAnalysis(): Zero-moment point is used to for fall evaluation.
+
+> Note that based on the different input (Contact Polytope or Support Polygon), **RBGenerator()** and **CPCEGenerator()** can output PVK-RB/CP, and OE/CP, respectively.
 
 ### Dependencies
 Package compilation requres:
