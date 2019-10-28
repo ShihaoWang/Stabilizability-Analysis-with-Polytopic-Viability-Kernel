@@ -139,33 +139,33 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
 
   while(Sim.time < t_final)
   {
-    switch (ControllerType)
-    {
-      case 1:
-      {
-
-      }
-      break;
-      default:
-      {
-        // A weird problem with actuators at ankles have been observed. Here we assume that these two motors behave in an ideal way.
-        std::vector<double> RealVelocities(DOF);
-        for (int i = 0; i < DOF; i++)
-        {
-          RealVelocities[i] = Sim.world->robots[0]->dq[i];
-        }
-        // Four actuators are compensated with ideal values.
-        RealVelocities[10] = qdotTrajDes[qdotTrajDes.size()-1][10];
-        RealVelocities[11] = qdotTrajDes[qdotTrajDes.size()-1][11];
-        RealVelocities[16] = qdotTrajDes[qdotTrajDes.size()-1][16];
-        RealVelocities[17] = qdotTrajDes[qdotTrajDes.size()-1][17];
-
-        Sim.world->robots[0]->dq = RealVelocities;
-        Config RealVelocitiesSet(RealVelocities);
-        Sim.controlSimulators[0].oderobot->SetVelocities(RealVelocitiesSet);
-      }
-      break;
-    }
+    // switch (ControllerType)
+    // {
+    //   case 1:
+    //   {
+    //
+    //   }
+    //   break;
+    //   default:
+    //   {
+    //     // A weird problem with actuators at ankles have been observed. Here we assume that these two motors behave in an ideal way.
+    //     std::vector<double> RealVelocities(DOF);
+    //     for (int i = 0; i < DOF; i++)
+    //     {
+    //       RealVelocities[i] = Sim.world->robots[0]->dq[i];
+    //     }
+    //     // Four actuators are compensated with ideal values.
+    //     RealVelocities[10] = qdotTrajDes[qdotTrajDes.size()-1][10];
+    //     RealVelocities[11] = qdotTrajDes[qdotTrajDes.size()-1][11];
+    //     RealVelocities[16] = qdotTrajDes[qdotTrajDes.size()-1][16];
+    //     RealVelocities[17] = qdotTrajDes[qdotTrajDes.size()-1][17];
+    //
+    //     Sim.world->robots[0]->dq = RealVelocities;
+    //     Config RealVelocitiesSet(RealVelocities);
+    //     Sim.controlSimulators[0].oderobot->SetVelocities(RealVelocitiesSet);
+    //   }
+    //   break;
+    // }
 
     Robot SimRobot = *Sim.world->robots[0];
 
@@ -235,7 +235,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     double OEObjective = RBGeneratorAnalysis(PIPSPTotal, OEMargin);
     OETraj[StepIndex] = OEObjective;
 
-    // Capture Point which is a 2D versino of PVK-CP
+    // Capture Point which is a 2D version of PVK-CP
     double CPMargin = 0.0;
     double CPObjective = CPCEGeneratorAnalysis(PIPSPTotal, CPMargin);
     CPTraj[StepIndex] = CPObjective;
@@ -280,7 +280,6 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
       {
         // In this case, the robot's controller would like to stabilize the robot with a QP controller.
         std::printf("Using Controller 2: QP Stabilizing Controller!\n");
-        // std::vector<double> qNew = StabilizingControllerGRB(SimRobot, ActJacobians, ConeUnits, EdgeNumber, DOF, dt, qTrajDes, qdotTrajDes, qddotTraj, qTrajAct, qdotTrajAct, QPStatus, RobotLinkInfo, RobotContactInfo, RobotConfigRef, NumberOfContactPoints, StepIndex);
         std::vector<double> qNew = StabilizingControllerContact(SimRobot, ActJacobians, ConeUnits, EdgeNumber, DOF, dt, qTrajDes, qdotTrajDes, qTrajAct, qdotTrajAct, RobotLinkInfo, RobotContactInfo, ContactPositionRef, ActContactPositions, ActVelocities, NumberOfContactPoints, StepIndex);
         qDes = qNew;
       }
