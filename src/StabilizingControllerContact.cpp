@@ -694,34 +694,34 @@ std::vector<double> StabilizingControllerContact(const Robot& SimRobot, const st
       for (int i = 6; i < _SimRobot.q.size(); i++)
       {
         double RobotVelocity_i = (qTrajAct[qTrajAct.size()-1][i] - qTrajAct[qTrajAct.size()-2][i])/dt;
-        // switch (i)
-        // {
-        //   case 10:
-        //   {
-        //       RobotVelocityCur[i] = _SimRobot.dq[i];
-        //   }
-        //   break;
-        //   case 11:
-        //   {
-        //       RobotVelocityCur[i] = _SimRobot.dq[i];
-        //   }
-        //   break;
-        //   case 16:
-        //   {
-        //       RobotVelocityCur[i] = _SimRobot.dq[i];
-        //   }
-        //   break;
-        //   case 17:
-        //   {
-        //     RobotVelocityCur[i] = _SimRobot.dq[i];
-        //   }
-        //   break;
-        //   default:
-        //   {
-        //     RobotVelocityCur[i] = RobotVelocity_i;
-        //   }
-        //   break;
-        // }
+        switch (i)
+        {
+          case 10:
+          {
+              RobotVelocityCur[i] = _SimRobot.dq[i];
+          }
+          break;
+          case 11:
+          {
+              RobotVelocityCur[i] = _SimRobot.dq[i];
+          }
+          break;
+          case 16:
+          {
+              RobotVelocityCur[i] = _SimRobot.dq[i];
+          }
+          break;
+          case 17:
+          {
+            RobotVelocityCur[i] = _SimRobot.dq[i];
+          }
+          break;
+          default:
+          {
+            RobotVelocityCur[i] = RobotVelocity_i;
+          }
+          break;
+        }
         if(RobotVelocityCur[i]<_SimRobot.velMin(i))
         {
           RobotVelocityCur[i] = _SimRobot.velMin(i);

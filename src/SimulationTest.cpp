@@ -118,8 +118,8 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   ObjectiveNames.push_back(CPTrajFile_Name);
   ObjectiveNames.push_back(ZMPTrajFile_Name);
 
-  const string qTrajActFile = "qTrajAct" + std::to_string(FileIndex) + ".txt";          const char *qTrajActFile_Name = qTrajActFile.c_str();
-  const string qdotTrajActFile = "qdotTrajAct" + std::to_string(FileIndex) + ".txt";    const char *qdotTrajActFile_Name = qdotTrajActFile.c_str();
+  const string qTrajActFile = "qActTraj" + std::to_string(FileIndex) + ".txt";          const char *qTrajActFile_Name = qTrajActFile.c_str();
+  const string qdotTrajActFile = "qdotActTraj" + std::to_string(FileIndex) + ".txt";    const char *qdotTrajActFile_Name = qdotTrajActFile.c_str();
   StateTrajNames.push_back(qTrajActFile_Name);
   StateTrajNames.push_back(qdotTrajActFile_Name);
 
@@ -139,33 +139,33 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
 
   while(Sim.time < t_final)
   {
-    // switch (ControllerType)
-    // {
-    //   case 1:
-    //   {
-    //
-    //   }
-    //   break;
-    //   default:
-    //   {
-    //     // A weird problem with actuators at ankles have been observed. Here we assume that these two motors behave in an ideal way.
-    //     std::vector<double> RealVelocities(DOF);
-    //     for (int i = 0; i < DOF; i++)
-    //     {
-    //       RealVelocities[i] = Sim.world->robots[0]->dq[i];
-    //     }
-    //     // Four actuators are compensated with ideal values.
-    //     RealVelocities[10] = qdotTrajDes[qdotTrajDes.size()-1][10];
-    //     RealVelocities[11] = qdotTrajDes[qdotTrajDes.size()-1][11];
-    //     RealVelocities[16] = qdotTrajDes[qdotTrajDes.size()-1][16];
-    //     RealVelocities[17] = qdotTrajDes[qdotTrajDes.size()-1][17];
-    //
-    //     Sim.world->robots[0]->dq = RealVelocities;
-    //     Config RealVelocitiesSet(RealVelocities);
-    //     Sim.controlSimulators[0].oderobot->SetVelocities(RealVelocitiesSet);
-    //   }
-    //   break;
-    // }
+    switch (ControllerType)
+    {
+      case 1:
+      {
+
+      }
+      break;
+      default:
+      {
+        // A weird problem with actuators at ankles have been observed. Here we assume that these two motors behave in an ideal way.
+        std::vector<double> RealVelocities(DOF);
+        for (int i = 0; i < DOF; i++)
+        {
+          RealVelocities[i] = Sim.world->robots[0]->dq[i];
+        }
+        // Four actuators are compensated with ideal values.
+        RealVelocities[10] = qdotTrajDes[qdotTrajDes.size()-1][10];
+        RealVelocities[11] = qdotTrajDes[qdotTrajDes.size()-1][11];
+        RealVelocities[16] = qdotTrajDes[qdotTrajDes.size()-1][16];
+        RealVelocities[17] = qdotTrajDes[qdotTrajDes.size()-1][17];
+
+        Sim.world->robots[0]->dq = RealVelocities;
+        Config RealVelocitiesSet(RealVelocities);
+        Sim.controlSimulators[0].oderobot->SetVelocities(RealVelocitiesSet);
+      }
+      break;
+    }
 
     Robot SimRobot = *Sim.world->robots[0];
 
@@ -289,9 +289,6 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
       }
       break;
     }
-
-    // TrajAppender(StateTrajNames[0], qTrajAct[qTrajAct.size()-1], DOF);
-    // TrajAppender(StateTrajNames[1], qdotTrajAct[qdotTrajAct.size()-1], DOF);
 
     TrajAppender(StateTrajNames[0], SimRobot.q, DOF);
     TrajAppender(StateTrajNames[1], SimRobot.dq, DOF);
