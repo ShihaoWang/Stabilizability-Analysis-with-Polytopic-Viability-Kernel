@@ -6,7 +6,7 @@
 #include "Simulation/WorldSimulation.h"
 #include <ode/ode.h>
 
-static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo & VKObj, const double & KEInit, const Vector3 & CentDirection)
+static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo & VKObj)
 {
   RobotWorld world;
   SimGUIBackend Backend(&world);
@@ -37,31 +37,11 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   SignedDistanceFieldInfo SDFInfo = InitEnviGenerator(SimRobot, RobotLinkInfo, RobotContactInfo, UserFilePath, InitRobotConfig);
   RobotConfigWriter(InitRobotConfig, UserFilePath, "InitConfig.config");
 
-  // // Post-data process for Capture Point
-  // SignedDistanceFieldInfo SDFInfo = SignedDistanceFieldGene(world, 251);
-  // CapturePointAnalysis(SimRobot, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo);
-
+  // Here we would like to give it one last chance, with which the disturbance is given with impulse.
   Config RobotConfigNew(InitRobotConfig);
   SimRobot.UpdateConfig(RobotConfigNew);
   SimRobot.UpdateGeometry();
-
-  bool InitVeloFlag = false;
-  int IterIndex = 0;
-  int IterLimit = 25;
-  while ((InitVeloFlag==false)&&(IterIndex<IterLimit))
-  {
-    for (int i = 0; i < SimRobot.q.size(); i++)
-    {
-      double scale = 1.0;
-      InitRobotVelocity[i] = RandomValue(scale);
-    }
-    SimRobot.dq = InitRobotVelocity;
-    InitVeloFlag = InitialVelocityGene(SimRobot, RobotLinkInfo, RobotContactInfo, KEInit, InitRobotVelocity);
-    IterIndex++;
-  }
-  SimRobot.UpdateConfig(Config(InitRobotConfig));
-  SimRobot.dq = InitRobotVelocity;
-  std::cout<<SimRobot.GetKineticEnergy()<<" J"<<std::endl;
+  SimRobot.dq = ZeroRobotVelocity;
 
   //  Given the optimized result to be the initial state
   Config InitRobotConfigNew(InitRobotConfig);
@@ -72,7 +52,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   Sim.controlSimulators[0].oderobot->SetConfig(InitRobotConfigNew);
   Sim.controlSimulators[0].oderobot->SetVelocities(InitRobotVelocityNew);
 
-  /* 7. Projected Inverted Pendulum Plot*/
+  /* 4. Projected Inverted Pendulum Plot*/
   std::vector<Vector3> ActContactPositions, ActVelocities;
   std::vector<Matrix> ActJacobians;
   std::vector<double> ActDists;
@@ -83,7 +63,6 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   ConvexEdgesWriter(FacetInfoObj, UserFilePath, "InitConfigCHEdges.txt");
 
   Vector3 InitCOM = SimRobot.GetCOM();
-  //  std::vector<PIPInfo> PIPTotal = ContactEdgesGeneration(CPVertex,  CPEdgeA, CPEdgeB, InitCOM, InitCOM, SDFInfo);
   int FailureFlag;
   std::vector<PIPInfo> PIPTotal = ContactEdgesGenerationSP(ActContactPositions, ActVelocities, ActDists, ActStatus, InitCOM, InitCOM, FailureFlag);   // SP denotes SP projection approach.
   PIPsWriter(PIPTotal, UserFilePath, "InitConfigPIPs.txt");
@@ -91,7 +70,6 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   IntersectionsWriter(FullPIPInters, UserFilePath, "InitConfigIntersections.txt");
 
   // This part is to simulate robot's world file.
-
   RobotWorld worldAct;
   SimGUIBackend BackendAct(&worldAct);
   WorldSimulation& SimAct = BackendAct.sim;
@@ -101,7 +79,7 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
   XMLFile = XMLFileStr.c_str();    // Here we must give abstract path to the file
   if(!BackendAct.LoadAndInitSim(XMLFile))
   {
-    std::cerr<<"Sample XML file path does not exist!"<<endl;
+    std::cerr<<"Envi" + std::to_string(FileIndex)<<".xml file path does not exist!"<<endl;
     return true;
   }
 
@@ -116,47 +94,10 @@ static bool InnerSimulation(const std::string & FolderPath, ViabilityKernelInfo 
     SimAct.UpdateModel();
     BackendAct.DoStateLogging_LinearPath(0, stateTrajFile_Name);
   }
-  SimAct.world->robots[0]->dq = InitRobotVelocity;
-  Config InitRobotVelocityImpl(InitRobotVelocity);
-  SimAct.controlSimulators[0].oderobot->SetVelocities(InitRobotVelocityImpl);
 
-  /* 8. Internal Experimentation */
+  /* 5. Internal Experimentation */
   SimulationTest(SimAct, VKObj, RobotLinkInfo, RobotContactInfo, SDFInfo, BackendAct, dt, FileIndex);
   return true;
-}
-
-static void InitParaGenerator(double & KEInit, Vector3& CentDirection)
-{
-  // The robot's initial kinetic energy will be sampled from a distribution.
-  // In addition, its centroidal direction will also be sampled.
-  std::random_device rd;
-  std::mt19937 gen(rd());
-
-  // Scenario 1
-  double KELow = 0.0;
-  double KEUpp = 50.0;
-
-  std::uniform_real_distribution<> KEDis(KELow, KEUpp);
-  KEInit = KEDis(gen);
-
-  double xLimit, yLimit, zLimit;
-  // Case 6
-  xLimit = 0.25;  yLimit = 0.25;  zLimit = 0.1;
-  std::uniform_real_distribution<> xDirectionDis(-xLimit, xLimit);
-  std::uniform_real_distribution<> yDirectionDis(-yLimit, yLimit);
-  std::uniform_real_distribution<> zDirectionDis(-zLimit, zLimit);
-
-  double xDirectionInit = xDirectionDis(gen);
-  double yDirectionInit = yDirectionDis(gen);
-  double zDirectionInit = zDirectionDis(gen);
-
-  double DirectionInitNorm = sqrt(xDirectionInit * xDirectionInit + yDirectionInit * yDirectionInit + zDirectionInit * zDirectionInit);
-  DirectionInitNorm = 1.0;
-  CentDirection.x = xDirectionInit/DirectionInitNorm;
-  CentDirection.y = yDirectionInit/DirectionInitNorm;
-  CentDirection.z = zDirectionInit/DirectionInitNorm;
-
-  return;
 }
 
 int main()
@@ -185,10 +126,7 @@ int main()
     bool InitializationFlag = false;
     while (InitializationFlag == false)
     {
-      double KEInit;
-      Vector3 CentDirection;
-      InitParaGenerator(KEInit, CentDirection);   // Here Cent Direction stands for the initial centroidal velocity direction!
-      InitializationFlag = InnerSimulation(FolderPath, VKObj, KEInit, CentDirection);
+      InitializationFlag = InnerSimulation(FolderPath, VKObj);
     }
   }
   return 0;

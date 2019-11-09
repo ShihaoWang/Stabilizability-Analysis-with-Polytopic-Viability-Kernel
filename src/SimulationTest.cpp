@@ -10,7 +10,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   /* Simulation parameters */
   int     EdgeNumber      = 4;
   double  mu              = 1.0;
-  double  t_last          = 0.5;
+  double  t_last          = 2.0 * dt;
   double  t_cur           = Sim.time;
   double  t_impul         = t_cur + t_last;                      // The impulse lasts for 0.5s.
   double  t_final         = 4.0;                                  // The simulation lasts for 3.5s.
@@ -20,7 +20,23 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   std::random_device rd;
   std::mt19937 gen(rd());
 
-  std::vector<double> RobotConfigRef = Sim.world->robots[0]->q;
+  double ImpFx = 3500.0;
+  double ImpFy = 3500.0;
+  double ImpFz = 1000.0;
+
+  std::uniform_real_distribution<> ImpXdis(-ImpFx, ImpFx);
+  std::uniform_real_distribution<> ImpYdis(-ImpFy, ImpFy);
+  std::uniform_real_distribution<> ImpZdis(-ImpFz, ImpFz);
+
+  double Fx_t = ImpXdis(gen);
+  double Fy_t = ImpYdis(gen);
+  double Fz_t = ImpZdis(gen);
+  Vector3 F_t(Fx_t, Fy_t, Fz_t);
+
+  /* Override the default controller with a PolynomialPathController */
+  auto NewControllerPtr = std::make_shared<PolynomialPathController>(*Sim.world->robots[0]);
+  Sim.SetController(0, NewControllerPtr);
+  NewControllerPtr->SetConstant(Sim.world->robots[0]->q);
 
   std::vector<Vector3> ContactPositionRef;
   // This function is used to get the robot's current active end effector position and Jacobian matrices.
@@ -44,23 +60,18 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     }
   }
 
-  /* Override the default controller with a PolynomialPathController */
-  auto NewControllerPtr = std::make_shared<PolynomialPathController>(*Sim.world->robots[0]);
-  Sim.SetController(0, NewControllerPtr);
-  NewControllerPtr->SetConstant(Sim.world->robots[0]->q);
-
   /* Simulation Trajectory */
   // These three are used to save the trajectory of the desired robot's properties.
-  std::vector<Config> qTrajDes,       qdotTrajDes;
-  qTrajDes.reserve(StepNo);           qdotTrajDes.reserve(StepNo);
-  qTrajDes.push_back(Sim.world->robots[0]->q);
-  qdotTrajDes.push_back(Sim.world->robots[0]->dq);
+  std::vector<Config> qDesTraj,       qdotDesTraj;
+  qDesTraj.reserve(StepNo);           qdotDesTraj.reserve(StepNo);
+  qDesTraj.push_back(Sim.world->robots[0]->q);
+  qdotDesTraj.push_back(Sim.world->robots[0]->dq);
 
   // These two save the trajectory of robot's actual properties.
-  std::vector<Config> qTrajAct,       qdotTrajAct;
-  qTrajAct.reserve(StepNo);           qdotTrajAct.reserve(StepNo);
-  qTrajAct.push_back(Sim.world->robots[0]->q);
-  qdotTrajAct.push_back(Sim.world->robots[0]->dq);
+  std::vector<Config> qActTraj,       qdotActTraj;
+  qActTraj.reserve(StepNo);           qdotActTraj.reserve(StepNo);
+  qActTraj.push_back(Sim.world->robots[0]->q);
+  qdotActTraj.push_back(Sim.world->robots[0]->dq);
 
   // Centroidal Informatioin only contains robot's centroidal position and velocity.
   std::vector<double> COMx(StepNo),             COMy(StepNo),             COMz(StepNo);
@@ -75,7 +86,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   int NumberOfActEndEffectorInit;               // This variable describes the number of active end effectors!
   int NumberOfContactPoints;                    // This variable describes the number of total contact points!
   ContactNumberFinder(RobotContactInfo, NumberOfActEndEffectorInit, NumberOfContactPoints);
-  SpecsWriter(*Sim.world->robots[0], t_final, dt, NumberOfActEndEffectorInit, FileIndex);
+  SpecsWriter(*Sim.world->robots[0], t_final, t_last, F_t, NumberOfActEndEffectorInit, FileIndex);
 
   int DOF = Sim.world->robots[0]->q.size();
 
@@ -118,10 +129,10 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   ObjectiveNames.push_back(CPTrajFile_Name);
   ObjectiveNames.push_back(ZMPTrajFile_Name);
 
-  const string qTrajActFile = "qActTraj" + std::to_string(FileIndex) + ".txt";          const char *qTrajActFile_Name = qTrajActFile.c_str();
-  const string qdotTrajActFile = "qdotActTraj" + std::to_string(FileIndex) + ".txt";    const char *qdotTrajActFile_Name = qdotTrajActFile.c_str();
-  StateTrajNames.push_back(qTrajActFile_Name);
-  StateTrajNames.push_back(qdotTrajActFile_Name);
+  const string qActTrajFile = "qActTraj" + std::to_string(FileIndex) + ".txt";          const char *qActTrajFile_Name = qActTrajFile.c_str();
+  const string qdotActTrajFile = "qdotActTraj" + std::to_string(FileIndex) + ".txt";    const char *qdotActTrajFile_Name = qdotActTrajFile.c_str();
+  StateTrajNames.push_back(qActTrajFile_Name);
+  StateTrajNames.push_back(qdotActTrajFile_Name);
 
   string stateTrajFile = "stateTraj" + std::to_string(FileIndex) + ".path";             const char *stateTrajFile_Name = stateTrajFile.c_str();
 
@@ -155,16 +166,22 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
           RealVelocities[i] = Sim.world->robots[0]->dq[i];
         }
         // Four actuators are compensated with ideal values.
-        RealVelocities[10] = qdotTrajDes[qdotTrajDes.size()-1][10];
-        RealVelocities[11] = qdotTrajDes[qdotTrajDes.size()-1][11];
-        RealVelocities[16] = qdotTrajDes[qdotTrajDes.size()-1][16];
-        RealVelocities[17] = qdotTrajDes[qdotTrajDes.size()-1][17];
+        RealVelocities[10] = qdotDesTraj[qdotDesTraj.size()-1][10];
+        RealVelocities[11] = qdotDesTraj[qdotDesTraj.size()-1][11];
+        RealVelocities[16] = qdotDesTraj[qdotDesTraj.size()-1][16];
+        RealVelocities[17] = qdotDesTraj[qdotDesTraj.size()-1][17];
 
         Sim.world->robots[0]->dq = RealVelocities;
         Config RealVelocitiesSet(RealVelocities);
         Sim.controlSimulators[0].oderobot->SetVelocities(RealVelocitiesSet);
       }
       break;
+    }
+
+    if(Sim.time<=t_impul)
+    {
+      // The impulse is given to the robot's torso
+      dBodyAddForceAtPos(Sim.odesim.robot(0)->body(18), Fx_t, Fy_t, Fz_t, 0.0, 0.0, 0.0);
     }
 
     Robot SimRobot = *Sim.world->robots[0];
@@ -272,15 +289,15 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
         // In this case, the robot's controller holds a constant initial configuration.
         std::printf("Using Controller 1: Rigid-body Controller!\n");
 
-        qTrajAct.push_back(SimRobot.q);
-        qdotTrajAct.push_back(SimRobot.dq);
+        qActTraj.push_back(SimRobot.q);
+        qdotActTraj.push_back(SimRobot.dq);
       }
       break;
       case 2:
       {
         // In this case, the robot's controller would like to stabilize the robot with a QP controller.
         std::printf("Using Controller 2: QP Stabilizing Controller!\n");
-        std::vector<double> qNew = StabilizingControllerContact(SimRobot, ActJacobians, ConeUnits, EdgeNumber, DOF, dt, qTrajDes, qdotTrajDes, qTrajAct, qdotTrajAct, RobotLinkInfo, RobotContactInfo, ContactPositionRef, ActContactPositions, ActVelocities, NumberOfContactPoints, StepIndex);
+        std::vector<double> qNew = StabilizingControllerContact(SimRobot, ActJacobians, ConeUnits, EdgeNumber, DOF, dt, qDesTraj, qdotDesTraj, qActTraj, qdotActTraj, RobotLinkInfo, RobotContactInfo, ContactPositionRef, ActContactPositions, ActVelocities, NumberOfContactPoints, StepIndex);
         qDes = qNew;
       }
       break;

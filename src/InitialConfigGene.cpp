@@ -21,7 +21,7 @@ static std::vector<LinkInfo> RobotLinkInfo;
 static std::vector<ContactStatusInfo> RobotContactInfo;
 
 static double PI = 3.1415926535897932;
-static double ConeAngle = PI/6.0;        // Pi/6
+static double ConeAngle = PI/4.0;        // Pi/6
 
 static std::vector<double> ConfigSampler()
 {
