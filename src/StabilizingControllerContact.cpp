@@ -18,11 +18,9 @@ static std::vector<Vector3> ContactVelocities;      // This vector saves robot's
 // QP Gains
 static double Kpos = 0.0;
 
-// Case 1/3
-// static double Kvel = 20.0;         // This gain should not be so big for stabilization.  1 works! 2 works! 5 kinda
+// static double Kvel = 20.0;         // This set of gains is used for instant change of robot's velocity
 // static double Kqddot = 5.0;
 
-// Case 5
 static double Kvel = 20.0;
 static double Kqddot = 5.0;
 

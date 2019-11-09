@@ -20,8 +20,8 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   std::random_device rd;
   std::mt19937 gen(rd());
 
-  double ImpFx = 3500.0;
-  double ImpFy = 3500.0;
+  double ImpFx = 5000.0;
+  double ImpFy = 5000.0;
   double ImpFz = 1000.0;
 
   std::uniform_real_distribution<> ImpXdis(-ImpFx, ImpFx);
@@ -31,6 +31,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   double Fx_t = ImpXdis(gen);
   double Fy_t = ImpYdis(gen);
   double Fz_t = ImpZdis(gen);
+
   Vector3 F_t(Fx_t, Fy_t, Fz_t);
 
   /* Override the default controller with a PolynomialPathController */
@@ -182,6 +183,8 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     {
       // The impulse is given to the robot's torso
       dBodyAddForceAtPos(Sim.odesim.robot(0)->body(19), Fx_t, Fy_t, Fz_t, 0.0, 0.0, 0.0);
+      qDesTraj.push_back(Sim.world->robots[0]->q);
+      qdotDesTraj.push_back(Sim.world->robots[0]->dq);
     }
 
     Robot SimRobot = *Sim.world->robots[0];
