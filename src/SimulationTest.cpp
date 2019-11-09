@@ -5,6 +5,61 @@
 #include "Control/PathController.h"
 #include "Control/JointTrackingController.h"
 
+static Vector3 ImpulForceGene(double & Fx_t, double & Fy_t, double & Fz_t)
+{
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
+  double ImpFx = 5000.0;
+  double ImpFy = 5000.0;
+  double ImpFz = 1000.0;
+
+  std::uniform_real_distribution<> ImpXdis(ImpFx/2.0, ImpFx);
+  std::uniform_real_distribution<> ImpYdis(ImpFy/2.0, ImpFy);
+  std::uniform_real_distribution<> ImpZdis(ImpFz/2.0, ImpFz);
+
+  double Sign_x_val = ((double) rand() / (RAND_MAX));
+  double Sign_y_val = ((double) rand() / (RAND_MAX));
+  double Sign_z_val = ((double) rand() / (RAND_MAX));
+
+  double Sign_x, Sign_y, Sign_z;
+  if(Sign_x_val<=0.5)
+  {
+    Sign_x = -1.0;
+  }
+  else
+  {
+    Sign_x = 1.0;
+  }
+  if(Sign_y_val<=0.5)
+  {
+    Sign_y = -1.0;
+  }
+  else
+  {
+    Sign_y = 1.0;
+  }
+  if(Sign_z_val<=0.5)
+  {
+    Sign_z = -1.0;
+  }
+  else
+  {
+    Sign_z = 1.0;
+  }
+
+  std::printf("Sign_x_val: %f\n", Sign_x_val);
+  std::printf("Sign_y_val: %f\n", Sign_y_val);
+  std::printf("Sign_z_val: %f\n", Sign_z_val);
+
+  Fx_t = Sign_x_val * ImpXdis(gen);
+  Fy_t = Sign_y_val * ImpYdis(gen);
+  Fz_t = Sign_z_val * ImpZdis(gen);
+
+  Vector3 F_t(Fx_t, Fy_t, Fz_t);
+  return F_t;
+}
+
 void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vector<LinkInfo> & RobotLinkInfo, std::vector<ContactStatusInfo> & RobotContactInfo, SignedDistanceFieldInfo & SDFInfo, SimGUIBackend & Backend, const double & dt, const int & FileIndex)
 {
   /* Simulation parameters */
@@ -16,23 +71,6 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
   double  t_final         = 4.0;                                  // The simulation lasts for 3.5s.
   int     StepNo          = round(t_final/dt);
   t_final+=Sim.time;
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-
-  double ImpFx = 5000.0;
-  double ImpFy = 5000.0;
-  double ImpFz = 1000.0;
-
-  std::uniform_real_distribution<> ImpXdis(-ImpFx, ImpFx);
-  std::uniform_real_distribution<> ImpYdis(-ImpFy, ImpFy);
-  std::uniform_real_distribution<> ImpZdis(-ImpFz, ImpFz);
-
-  double Fx_t = ImpXdis(gen);
-  double Fy_t = ImpYdis(gen);
-  double Fz_t = ImpZdis(gen);
-
-  Vector3 F_t(Fx_t, Fy_t, Fz_t);
 
   /* Override the default controller with a PolynomialPathController */
   auto NewControllerPtr = std::make_shared<PolynomialPathController>(*Sim.world->robots[0]);
@@ -60,6 +98,9 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
       }
     }
   }
+
+  double Fx_t, Fy_t, Fz_t;
+  Vector3 F_t = ImpulForceGene(Fx_t, Fy_t, Fz_t);
 
   /* Simulation Trajectory */
   // These three are used to save the trajectory of the desired robot's properties.
