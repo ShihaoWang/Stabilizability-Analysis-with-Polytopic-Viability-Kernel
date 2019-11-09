@@ -181,7 +181,7 @@ void SimulationTest(WorldSimulation & Sim, ViabilityKernelInfo& VKObj, std::vect
     if(Sim.time<=t_impul)
     {
       // The impulse is given to the robot's torso
-      dBodyAddForceAtPos(Sim.odesim.robot(0)->body(18), Fx_t, Fy_t, Fz_t, 0.0, 0.0, 0.0);
+      dBodyAddForceAtPos(Sim.odesim.robot(0)->body(19), Fx_t, Fy_t, Fz_t, 0.0, 0.0, 0.0);
     }
 
     Robot SimRobot = *Sim.world->robots[0];
